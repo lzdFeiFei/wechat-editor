@@ -19,7 +19,8 @@
       "mcp__figma__get_design_context",
       "Skill(code-review)",
       "Skill(prompt-optimizer)",
-      "Skill(dev-docs)"
+      "Skill(dev-docs)",
+      "Bash(npx tailwindcss:*)"
     ]
   }
 }
