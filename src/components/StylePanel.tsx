@@ -13,14 +13,16 @@ import {
   ListOrdered,
   Quote,
   Minus,
+  Sparkles,
 } from 'lucide-react'
 import { useEditorContext } from '@/contexts/EditorContext'
 import { useEditorCommands } from '@/hooks/useEditorCommands'
 import { TEXT_COLORS, BACKGROUND_COLORS } from '@/types/style'
+import { PRESET_THEMES } from '@/types/theme'
 import { useState } from 'react'
 
 export default function StylePanel() {
-  const { quillInstance } = useEditorContext()
+  const { quillInstance, currentTheme, applyTheme } = useEditorContext()
   const commands = useEditorCommands(quillInstance)
   const [showTextColors, setShowTextColors] = useState(false)
   const [showBgColors, setShowBgColors] = useState(false)
@@ -237,6 +239,50 @@ export default function StylePanel() {
               <Minus className="w-4 h-4" />
               <span>分割线</span>
             </button>
+          </div>
+        </div>
+
+        {/* 颜色主题 */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-gray-600" />
+            <h3 className="text-sm font-medium text-gray-700">颜色主题</h3>
+          </div>
+          <div className="space-y-2">
+            {PRESET_THEMES.map(theme => (
+              <button
+                key={theme.id}
+                onClick={() => applyTheme(theme)}
+                className={`w-full px-3 py-2 text-sm text-left rounded-md transition-colors ${
+                  currentTheme.id === theme.id
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-50 hover:bg-gray-100'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="font-medium">{theme.name}</div>
+                    <div
+                      className={`text-xs mt-1 ${
+                        currentTheme.id === theme.id ? 'text-white/80' : 'text-gray-500'
+                      }`}
+                    >
+                      {theme.description}
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <div
+                      className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+                      style={{ backgroundColor: theme.colors.primary }}
+                    />
+                    <div
+                      className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
+                      style={{ backgroundColor: theme.colors.headingColor }}
+                    />
+                  </div>
+                </div>
+              </button>
+            ))}
           </div>
         </div>
       </div>

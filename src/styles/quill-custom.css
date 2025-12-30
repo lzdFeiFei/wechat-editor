@@ -63,6 +63,27 @@
   color: #1f2937;
 }
 
+/* 预览区样式覆盖 */
+.preview-content h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 20px 0 16px;
+}
+
+.preview-content h2 {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 18px 0 14px;
+  padding-left: 12px;
+  border-left: 4px solid currentColor;
+}
+
+.preview-content h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 16px 0 12px;
+}
+
 /* 段落样式 */
 .ql-editor p {
   margin: 12px 0;
