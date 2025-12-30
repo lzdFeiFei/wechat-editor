@@ -1,17 +1,30 @@
-import { FileText, Github, Layout } from 'lucide-react'
+import { FileText, Github, Layout, Folder } from 'lucide-react'
 import { useState } from 'react'
 import TemplateModal from './TemplateModal'
 import SaveTemplateModal from './SaveTemplateModal'
+import DraftListModal from './DraftListModal'
 import { useTemplates } from '@/hooks/useTemplates'
+import { useDrafts } from '@/hooks/useDrafts'
 import { useEditorContext } from '@/contexts/EditorContext'
 import { Template } from '@/types/template'
+import { Draft } from '@/types/draft'
 
 export default function Header() {
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false)
+  const [isDraftListModalOpen, setIsDraftListModalOpen] = useState(false)
 
   const { presetTemplates, customTemplates, addCustomTemplate, deleteCustomTemplate } =
     useTemplates()
+  const {
+    drafts,
+    currentDraftId,
+    draftsCount,
+    createNewDraft,
+    removeDraft,
+    renameDraftTitle,
+    searchDraftsByText,
+  } = useDrafts()
   const { quillInstance, content, currentTheme, applyTheme } = useEditorContext()
 
   // 应用模板
@@ -34,6 +47,36 @@ export default function Header() {
     addCustomTemplate(name, description, content.html, currentTheme)
   }
 
+  // 加载草稿
+  const handleLoadDraft = (draft: Draft) => {
+    if (!quillInstance) return
+
+    // 应用主题
+    applyTheme(draft.theme)
+
+    // 设置内容
+    quillInstance.root.innerHTML = draft.content
+  }
+
+  // 创建新草稿
+  const handleCreateDraft = () => {
+    if (!content.html || !content.html.trim()) {
+      alert('当前没有内容，无法创建草稿')
+      return
+    }
+
+    try {
+      createNewDraft({
+        content: content.html,
+        theme: currentTheme,
+        wordCount: content.wordCount,
+      })
+      alert('草稿已创建')
+    } catch (error) {
+      alert(error instanceof Error ? error.message : '创建草稿失败')
+    }
+  }
+
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
@@ -53,8 +96,17 @@ export default function Header() {
             <Layout className="w-4 h-4" />
             模板
           </button>
-          <button className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+          <button
+            onClick={() => setIsDraftListModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors relative"
+          >
+            <Folder className="w-4 h-4" />
             草稿
+            {draftsCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {draftsCount}
+              </span>
+            )}
           </button>
           <button className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
             帮助
@@ -89,6 +141,20 @@ export default function Header() {
         isOpen={isSaveTemplateModalOpen}
         onClose={() => setIsSaveTemplateModalOpen(false)}
         onSave={handleSaveAsTemplate}
+      />
+
+      {/* Draft List Modal */}
+      <DraftListModal
+        isOpen={isDraftListModalOpen}
+        onClose={() => setIsDraftListModalOpen(false)}
+        drafts={drafts}
+        currentDraftId={currentDraftId}
+        maxDrafts={10}
+        onLoadDraft={handleLoadDraft}
+        onCreateDraft={handleCreateDraft}
+        onDeleteDraft={removeDraft}
+        onRenameDraft={renameDraftTitle}
+        onSearch={searchDraftsByText}
       />
     </header>
   )
