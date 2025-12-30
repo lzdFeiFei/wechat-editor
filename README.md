@@ -92,11 +92,20 @@ npm run preview
 - ✅ 清空内容功能
 - ✅ 降级方案（兼容老浏览器）
 
-### 🚧 开发中
-
 #### 模板系统
-- ⏳ 5套预设模板
-- ⏳ 自定义模板保存
+- ✅ 5套预设模板
+  - 简约风格（日常文章）
+  - 商务风格（企业宣传）
+  - 文艺风格（散文随笔）
+  - 科技风格（技术文章）
+  - 活泼风格（生活分享）
+- ✅ 模板选择和预览界面
+- ✅ 一键应用模板（内容+主题）
+- ✅ 自定义模板保存（最多10个）
+- ✅ 自定义模板管理（删除）
+- ✅ 模板本地持久化
+
+### 🚧 开发中
 
 #### 图片处理
 - ⏳ 图片上传
@@ -122,30 +131,39 @@ npm run preview
 ```
 wechat-editor/
 ├── src/
-│   ├── components/        # React 组件
-│   │   ├── Header.tsx     # 顶部导航栏
-│   │   ├── StylePanel.tsx # 样式工具栏
-│   │   ├── Editor.tsx     # 编辑器
-│   │   ├── Preview.tsx    # 预览区
-│   │   └── Toolbar.tsx    # 底部工具栏
-│   ├── contexts/          # React Context
+│   ├── components/             # React 组件
+│   │   ├── Header.tsx          # 顶部导航栏
+│   │   ├── StylePanel.tsx      # 样式工具栏
+│   │   ├── Editor.tsx          # 编辑器
+│   │   ├── Preview.tsx         # 预览区
+│   │   ├── Toolbar.tsx         # 底部工具栏
+│   │   ├── TemplateModal.tsx   # 模板选择弹窗
+│   │   └── SaveTemplateModal.tsx # 保存模板弹窗
+│   ├── contexts/               # React Context
 │   │   └── EditorContext.tsx
-│   ├── hooks/             # 自定义 Hooks
+│   ├── hooks/                  # 自定义 Hooks
 │   │   ├── useEditor.ts
 │   │   ├── useKeyboardShortcuts.ts
-│   │   └── useAutoSave.ts
-│   ├── utils/             # 工具函数
-│   │   └── storage.ts     # 本地存储
-│   ├── types/             # TypeScript 类型
-│   │   └── index.ts
-│   ├── styles/            # 样式文件
+│   │   ├── useAutoSave.ts
+│   │   └── useTemplates.ts     # 模板管理
+│   ├── utils/                  # 工具函数
+│   │   ├── storage.ts          # 本地存储
+│   │   ├── wechat-html.ts      # 微信HTML转换
+│   │   ├── theme-styles.ts     # 主题样式生成
+│   │   └── quill-divider.ts    # 自定义分割线
+│   ├── types/                  # TypeScript 类型
+│   │   ├── index.ts
+│   │   ├── style.ts
+│   │   ├── theme.ts
+│   │   └── template.ts         # 模板类型
+│   ├── styles/                 # 样式文件
 │   │   └── quill-custom.css
-│   ├── App.tsx            # 主应用组件
-│   ├── main.tsx           # 入口文件
-│   └── index.css          # 全局样式
-├── public/                # 静态资源
-├── .claude/               # Claude Code 配置
-└── dev/                   # 开发文档
+│   ├── App.tsx                 # 主应用组件
+│   ├── main.tsx                # 入口文件
+│   └── index.css               # 全局样式
+├── public/                     # 静态资源
+├── .claude/                    # Claude Code 配置
+└── dev/                        # 开发文档
 
 ```
 
@@ -171,7 +189,12 @@ wechat-editor/
 - [x] 样式转换引擎
 - [x] 主题样式应用
 
-### 阶段5：模板系统 ⏳
+### 阶段5：模板系统 ✅
+- [x] 5套预设模板
+- [x] 模板选择界面
+- [x] 模板应用功能
+- [x] 自定义模板保存
+
 ### 阶段6：图片处理 ⏳
 ### 阶段7：草稿系统 ⏳
 ### 阶段8：一键复制功能 ✅
@@ -219,6 +242,14 @@ wechat-editor/
 - 实现复制到剪贴板功能
 - 复制状态提示和使用指引
 - 清空内容功能
+
+**阶段5完成**：
+- 实现5套预设模板（简约/商务/文艺/科技/活泼）
+- 模板选择和预览界面
+- 模板应用功能（自动应用内容和主题）
+- 自定义模板保存系统
+- 自定义模板管理（删除功能）
+- 模板本地持久化存储
 
 ## 📄 许可证
 

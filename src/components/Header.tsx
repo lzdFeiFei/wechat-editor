@@ -1,6 +1,39 @@
-import { FileText, Github } from 'lucide-react'
+import { FileText, Github, Layout } from 'lucide-react'
+import { useState } from 'react'
+import TemplateModal from './TemplateModal'
+import SaveTemplateModal from './SaveTemplateModal'
+import { useTemplates } from '@/hooks/useTemplates'
+import { useEditorContext } from '@/contexts/EditorContext'
+import { Template } from '@/types/template'
 
 export default function Header() {
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
+  const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false)
+
+  const { presetTemplates, customTemplates, addCustomTemplate, deleteCustomTemplate } =
+    useTemplates()
+  const { quillInstance, content, currentTheme, applyTheme } = useEditorContext()
+
+  // 应用模板
+  const handleApplyTemplate = (template: Template) => {
+    if (!quillInstance) return
+
+    // 应用主题
+    applyTheme(template.theme)
+
+    // 设置内容
+    quillInstance.root.innerHTML = template.content
+  }
+
+  // 保存为模板
+  const handleSaveAsTemplate = (name: string, description: string) => {
+    if (!content.html) {
+      throw new Error('当前没有内容可以保存')
+    }
+
+    addCustomTemplate(name, description, content.html, currentTheme)
+  }
+
   return (
     <header className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
@@ -13,6 +46,13 @@ export default function Header() {
         </div>
 
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => setIsTemplateModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            <Layout className="w-4 h-4" />
+            模板
+          </button>
           <button className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
             草稿
           </button>
@@ -29,6 +69,27 @@ export default function Header() {
           </a>
         </div>
       </div>
+
+      {/* Template Modal */}
+      <TemplateModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+        presetTemplates={presetTemplates}
+        customTemplates={customTemplates}
+        onApplyTemplate={handleApplyTemplate}
+        onSaveAsTemplate={() => {
+          setIsTemplateModalOpen(false)
+          setIsSaveTemplateModalOpen(true)
+        }}
+        onDeleteTemplate={deleteCustomTemplate}
+      />
+
+      {/* Save Template Modal */}
+      <SaveTemplateModal
+        isOpen={isSaveTemplateModalOpen}
+        onClose={() => setIsSaveTemplateModalOpen(false)}
+        onSave={handleSaveAsTemplate}
+      />
     </header>
   )
 }

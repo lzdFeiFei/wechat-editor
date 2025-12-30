@@ -85,9 +85,10 @@ export default function Editor() {
       })
 
       // 粘贴时清除格式
-      quillRef.current.clipboard.addMatcher(Node.ELEMENT_NODE, (node, delta) => {
-        const plaintext = node.innerText || node.textContent || ''
-        return new Quill.import('delta')().insert(plaintext)
+      quillRef.current.clipboard.addMatcher(Node.ELEMENT_NODE, (node) => {
+        const plaintext = (node as HTMLElement).textContent || ''
+        const Delta = Quill.import('delta') as any
+        return new Delta().insert(plaintext)
       })
     }
 

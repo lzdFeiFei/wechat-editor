@@ -11,7 +11,7 @@ export function useAutoSave(
   options: AutoSaveOptions = {}
 ) {
   const { delay = 30000, enabled = true } = options
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<number>()
   const lastSavedContent = useRef<string>(content)
 
   useEffect(() => {
