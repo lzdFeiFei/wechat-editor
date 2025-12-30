@@ -1,6 +1,6 @@
 # 微信公众号排版工具 MVP - 上下文文档
 
-**最后更新：2025-12-30 19:30**
+**最后更新：2025-12-30 20:00**
 
 ---
 
@@ -62,7 +62,7 @@
   - 模板本地持久化存储（localStorage）
   - Git提交：`2bd6844 - feat(template): 实现模板系统功能`
 
-- ✅ **阶段6：图片处理** (100%) - **本次会话完成**
+- ✅ **阶段6：图片处理** (100%)
   - 图片上传功能（点击上传、拖拽上传）
   - Canvas API图片压缩（最大宽度900px，质量可调0.5-1.0）
   - 图片压缩工具（imageProcessor.ts）
@@ -74,16 +74,24 @@
   - 微信HTML转换引擎图片处理支持
   - Git提交：`8cc16e2 - feat(image): 实现图片处理功能`
 
+- ✅ **阶段7：草稿系统** (100%) - **本次会话完成**
+  - 草稿列表管理界面（DraftListModal）
+  - 草稿CRUD操作（创建、加载、删除、重命名）
+  - 多草稿存储（最多10个，localStorage持久化）
+  - 草稿搜索功能（按标题和内容搜索）
+  - 草稿元数据（字数、创建时间、更新时间）
+  - 草稿类型定义（draft.ts）
+  - 草稿存储工具（draftStorage.ts）
+  - 草稿管理Hook（useDrafts.ts）
+  - Header草稿按钮（带数量徽章）
+  - 当前草稿高亮显示
+  - 内联重命名编辑（Enter保存、Esc取消）
+  - Git提交：`75892f1 - feat(draft): 实现草稿系统功能`
+
 ### 🟡 进行中
 - 无（当前所有开发任务已完成）
 
 ### ⏳ 待开始
-
-- **阶段7：草稿系统**
-  - 草稿列表管理界面
-  - 草稿重命名/删除功能
-  - 多草稿存储（最多10篇）
-  - 草稿搜索功能
 
 - **阶段9：用户体验优化**
   - 首次使用引导
@@ -116,7 +124,7 @@
 ## 项目当前状态
 
 ### 完成度
-**总体进度：70%** (7/10个阶段完成)
+**总体进度：80%** (8/10个阶段完成)
 
 ### 技术栈（已实现）
 - **前端框架**：React 18.3.1 + TypeScript 5.6.2
@@ -132,14 +140,15 @@
 wechat-editor/
 ├── src/
 │   ├── components/             # React组件
-│   │   ├── Header.tsx          # 顶部导航栏（带模板按钮）
+│   │   ├── Header.tsx          # 顶部导航栏（带模板/草稿按钮）
 │   │   ├── StylePanel.tsx      # 样式工具栏（完整样式+主题选择+图片上传）
 │   │   ├── Editor.tsx          # Quill编辑器（快捷键+自动保存+拖拽上传）
 │   │   ├── Preview.tsx         # 预览区（手机视图+主题应用）
 │   │   ├── Toolbar.tsx         # 底部工具栏（复制+清空）
 │   │   ├── TemplateModal.tsx   # 模板选择弹窗
 │   │   ├── SaveTemplateModal.tsx # 保存模板弹窗
-│   │   └── ImageUploadModal.tsx # 图片上传弹窗
+│   │   ├── ImageUploadModal.tsx # 图片上传弹窗
+│   │   └── DraftListModal.tsx  # 草稿列表弹窗
 │   ├── contexts/
 │   │   └── EditorContext.tsx   # 全局状态（content, quill实例, theme）
 │   ├── hooks/                  # 自定义Hooks
@@ -150,18 +159,21 @@ wechat-editor/
 │   │   ├── useCopyToClipboard.ts # 复制功能
 │   │   ├── useEditorCommands.ts # 编辑器命令
 │   │   ├── useTemplates.ts     # 模板管理
-│   │   └── useImageUpload.ts   # 图片上传
+│   │   ├── useImageUpload.ts   # 图片上传
+│   │   └── useDrafts.ts        # 草稿管理
 │   ├── utils/                  # 工具函数
 │   │   ├── storage.ts          # localStorage操作
 │   │   ├── wechat-html.ts      # 微信HTML转换引擎（含图片处理）
 │   │   ├── theme-styles.ts     # 主题CSS生成
 │   │   ├── imageProcessor.ts   # 图片压缩工具
+│   │   ├── draftStorage.ts     # 草稿存储工具
 │   │   └── quill-divider.ts    # 自定义分割线Blot
 │   ├── types/                  # TypeScript类型
 │   │   ├── index.ts            # 基础类型
 │   │   ├── style.ts            # 样式常量
 │   │   ├── theme.ts            # 主题类型
-│   │   └── template.ts         # 模板类型
+│   │   ├── template.ts         # 模板类型
+│   │   └── draft.ts            # 草稿类型
 │   ├── styles/
 │   │   └── quill-custom.css    # Quill自定义样式
 │   ├── App.tsx                 # 主应用组件
@@ -631,7 +643,7 @@ HTML转换: src/utils/wechat-html.ts
 
 ---
 
-**文档版本**：v2.1
+**文档版本**：v2.2
 **创建日期**：2025-12-30
-**最后更新**：2025-12-30 19:30
-**更新内容**：添加阶段6图片处理功能完成状态、更新项目结构
+**最后更新**：2025-12-30 20:00
+**更新内容**：添加阶段7草稿系统完成状态、更新项目结构和完成度至80%
