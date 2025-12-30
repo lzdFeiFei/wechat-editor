@@ -3,6 +3,7 @@ import { useState } from 'react'
 import TemplateModal from './TemplateModal'
 import SaveTemplateModal from './SaveTemplateModal'
 import DraftListModal from './DraftListModal'
+import HelpModal from './HelpModal'
 import { useTemplates } from '@/hooks/useTemplates'
 import { useDrafts } from '@/hooks/useDrafts'
 import { useEditorContext } from '@/contexts/EditorContext'
@@ -13,6 +14,7 @@ export default function Header() {
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false)
   const [isSaveTemplateModalOpen, setIsSaveTemplateModalOpen] = useState(false)
   const [isDraftListModalOpen, setIsDraftListModalOpen] = useState(false)
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false)
 
   const { presetTemplates, customTemplates, addCustomTemplate, deleteCustomTemplate } =
     useTemplates()
@@ -91,14 +93,14 @@ export default function Header() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => setIsTemplateModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+            className="template-button flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
           >
             <Layout className="w-4 h-4" />
             模板
           </button>
           <button
             onClick={() => setIsDraftListModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors relative"
+            className="draft-button flex items-center gap-2 px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors relative"
           >
             <Folder className="w-4 h-4" />
             草稿
@@ -108,7 +110,10 @@ export default function Header() {
               </span>
             )}
           </button>
-          <button className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+          <button
+            onClick={() => setIsHelpModalOpen(true)}
+            className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          >
             帮助
           </button>
           <a
@@ -156,6 +161,9 @@ export default function Header() {
         onRenameDraft={renameDraftTitle}
         onSearch={searchDraftsByText}
       />
+
+      {/* Help Modal */}
+      <HelpModal isOpen={isHelpModalOpen} onClose={() => setIsHelpModalOpen(false)} />
     </header>
   )
 }
