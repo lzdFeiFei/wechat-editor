@@ -1,6 +1,6 @@
 # 微信公众号排版工具 MVP - 上下文文档
 
-**最后更新：2025-12-30 20:00**
+**最后更新：2025-12-30 20:30**
 
 ---
 
@@ -74,7 +74,7 @@
   - 微信HTML转换引擎图片处理支持
   - Git提交：`8cc16e2 - feat(image): 实现图片处理功能`
 
-- ✅ **阶段7：草稿系统** (100%) - **本次会话完成**
+- ✅ **阶段7：草稿系统** (100%)
   - 草稿列表管理界面（DraftListModal）
   - 草稿CRUD操作（创建、加载、删除、重命名）
   - 多草稿存储（最多10个，localStorage持久化）
@@ -88,16 +88,25 @@
   - 内联重命名编辑（Enter保存、Esc取消）
   - Git提交：`75892f1 - feat(draft): 实现草稿系统功能`
 
+- ✅ **阶段9：用户体验优化** (100%) - **本次会话完成**
+  - 首次使用引导系统（OnboardingTour，6步流程）
+  - 帮助文档中心（HelpModal，4个标签页）
+  - 快捷键说明（7个常用快捷键）
+  - 常见问题解答（6个FAQ）
+  - 使用技巧提示（5个实用技巧）
+  - 全局Toast通知系统（4种类型：success/error/warning/info）
+  - Toast组件（Toast.tsx）
+  - Toast容器（ToastContainer.tsx）
+  - Toast Hook（useToast.ts）
+  - 区域className标注（供引导定位）
+  - fadeIn动画效果
+  - localStorage记录引导完成状态
+  - Git提交：`fcdbddc - feat(ux): 实现用户体验优化功能`
+
 ### 🟡 进行中
 - 无（当前所有开发任务已完成）
 
 ### ⏳ 待开始
-
-- **阶段9：用户体验优化**
-  - 首次使用引导
-  - 帮助提示和文档
-  - 错误处理优化
-  - 性能优化（代码分割、懒加载）
 
 - **阶段10：测试和发布**
   - 功能测试
@@ -124,7 +133,7 @@
 ## 项目当前状态
 
 ### 完成度
-**总体进度：80%** (8/10个阶段完成)
+**总体进度：90%** (9/10个阶段完成)
 
 ### 技术栈（已实现）
 - **前端框架**：React 18.3.1 + TypeScript 5.6.2
@@ -140,7 +149,7 @@
 wechat-editor/
 ├── src/
 │   ├── components/             # React组件
-│   │   ├── Header.tsx          # 顶部导航栏（带模板/草稿按钮）
+│   │   ├── Header.tsx          # 顶部导航栏（带模板/草稿/帮助按钮）
 │   │   ├── StylePanel.tsx      # 样式工具栏（完整样式+主题选择+图片上传）
 │   │   ├── Editor.tsx          # Quill编辑器（快捷键+自动保存+拖拽上传）
 │   │   ├── Preview.tsx         # 预览区（手机视图+主题应用）
@@ -148,7 +157,11 @@ wechat-editor/
 │   │   ├── TemplateModal.tsx   # 模板选择弹窗
 │   │   ├── SaveTemplateModal.tsx # 保存模板弹窗
 │   │   ├── ImageUploadModal.tsx # 图片上传弹窗
-│   │   └── DraftListModal.tsx  # 草稿列表弹窗
+│   │   ├── DraftListModal.tsx  # 草稿列表弹窗
+│   │   ├── HelpModal.tsx       # 帮助文档弹窗
+│   │   ├── OnboardingTour.tsx  # 首次使用引导
+│   │   ├── Toast.tsx           # Toast通知组件
+│   │   └── ToastContainer.tsx  # Toast容器组件
 │   ├── contexts/
 │   │   └── EditorContext.tsx   # 全局状态（content, quill实例, theme）
 │   ├── hooks/                  # 自定义Hooks
@@ -160,7 +173,8 @@ wechat-editor/
 │   │   ├── useEditorCommands.ts # 编辑器命令
 │   │   ├── useTemplates.ts     # 模板管理
 │   │   ├── useImageUpload.ts   # 图片上传
-│   │   └── useDrafts.ts        # 草稿管理
+│   │   ├── useDrafts.ts        # 草稿管理
+│   │   └── useToast.ts         # Toast通知
 │   ├── utils/                  # 工具函数
 │   │   ├── storage.ts          # localStorage操作
 │   │   ├── wechat-html.ts      # 微信HTML转换引擎（含图片处理）
@@ -643,7 +657,7 @@ HTML转换: src/utils/wechat-html.ts
 
 ---
 
-**文档版本**：v2.2
+**文档版本**：v2.3
 **创建日期**：2025-12-30
-**最后更新**：2025-12-30 20:00
-**更新内容**：添加阶段7草稿系统完成状态、更新项目结构和完成度至80%
+**最后更新**：2025-12-30 20:30
+**更新内容**：添加阶段9用户体验优化完成状态、更新项目结构和完成度至90%
