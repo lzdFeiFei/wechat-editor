@@ -6,12 +6,16 @@ import { useEditorContext } from '@/contexts/EditorContext'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useAutoSave } from '@/hooks/useAutoSave'
 import { saveCurrentDraft, loadCurrentDraft, formatRelativeTime, getLastSavedTime } from '@/utils/storage'
+import { registerDivider } from '@/utils/quill-divider'
 import { Save, Check } from 'lucide-react'
+
+// 注册自定义 Blot
+registerDivider()
 
 export default function Editor() {
   const editorRef = useRef<HTMLDivElement>(null)
   const quillRef = useRef<Quill | null>(null)
-  const { content, updateContent } = useEditorContext()
+  const { content, updateContent, setQuillInstance } = useEditorContext()
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [showSaveIndicator, setShowSaveIndicator] = useState(false)
 
@@ -58,6 +62,9 @@ export default function Editor() {
         },
       })
 
+      // 将 quill 实例添加到 context
+      setQuillInstance(quillRef.current)
+
       // 加载之前保存的内容
       const savedContent = loadCurrentDraft()
       if (savedContent) {
@@ -86,10 +93,11 @@ export default function Editor() {
 
     return () => {
       if (quillRef.current) {
+        setQuillInstance(null)
         quillRef.current = null
       }
     }
-  }, [updateContent])
+  }, [updateContent, setQuillInstance])
 
   return (
     <div className="flex-1 bg-white overflow-hidden flex flex-col">

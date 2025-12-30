@@ -1,17 +1,29 @@
-import { createContext, useContext, ReactNode } from 'react'
+import { createContext, useContext, ReactNode, useState, useCallback } from 'react'
 import { useEditor, EditorContent } from '@/hooks/useEditor'
+import Quill from 'quill'
 
 interface EditorContextType {
   content: EditorContent
   updateContent: (html: string, text: string) => void
+  quillInstance: Quill | null
+  setQuillInstance: (quill: Quill | null) => void
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined)
 
 export function EditorProvider({ children }: { children: ReactNode }) {
   const editor = useEditor()
+  const [quillInstance, setQuillInstanceState] = useState<Quill | null>(null)
 
-  return <EditorContext.Provider value={editor}>{children}</EditorContext.Provider>
+  const setQuillInstance = useCallback((quill: Quill | null) => {
+    setQuillInstanceState(quill)
+  }, [])
+
+  return (
+    <EditorContext.Provider value={{ ...editor, quillInstance, setQuillInstance }}>
+      {children}
+    </EditorContext.Provider>
+  )
 }
 
 export function useEditorContext() {

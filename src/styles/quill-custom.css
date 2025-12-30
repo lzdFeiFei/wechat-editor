@@ -121,3 +121,18 @@
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   font-size: 14px;
 }
+
+/* 分割线样式 */
+.ql-divider {
+  border: none;
+  border-top: 2px solid #e5e7eb;
+  margin: 20px 0;
+  padding: 0;
+}
+
+.ql-editor hr {
+  border: none;
+  border-top: 2px solid #e5e7eb;
+  margin: 20px 0;
+  padding: 0;
+}
