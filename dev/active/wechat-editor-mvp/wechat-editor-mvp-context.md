@@ -1,6 +1,6 @@
 # 微信公众号排版工具 MVP - 上下文文档
 
-**最后更新：2025-12-30 18:30**
+**最后更新：2025-12-30 19:30**
 
 ---
 
@@ -53,7 +53,7 @@
   - 清空内容功能
   - Git提交：`f1b65b0 - feat(copy): 实现一键复制到微信公众号功能`
 
-- ✅ **阶段5：模板系统** (100%) - **本次会话完成**
+- ✅ **阶段5：模板系统** (100%)
   - 5套预设模板（简约/商务/文艺/科技/活泼）
   - 模板选择和预览界面（TemplateModal）
   - 一键应用模板（内容+主题）
@@ -62,14 +62,22 @@
   - 模板本地持久化存储（localStorage）
   - Git提交：`2bd6844 - feat(template): 实现模板系统功能`
 
+- ✅ **阶段6：图片处理** (100%) - **本次会话完成**
+  - 图片上传功能（点击上传、拖拽上传）
+  - Canvas API图片压缩（最大宽度900px，质量可调0.5-1.0）
+  - 图片压缩工具（imageProcessor.ts）
+  - 图片上传Hook（useImageUpload.ts）
+  - 图片上传Modal界面（压缩设置、进度显示、结果统计）
+  - 拖拽上传视觉反馈
+  - base64格式转换（微信兼容）
+  - 自动插入到编辑器并应用样式
+  - 微信HTML转换引擎图片处理支持
+  - Git提交：`8cc16e2 - feat(image): 实现图片处理功能`
+
 ### 🟡 进行中
 - 无（当前所有开发任务已完成）
 
 ### ⏳ 待开始
-- **阶段6：图片处理**
-  - 图片上传（本地文件、拖拽上传）
-  - 图片压缩（使用Canvas API，最大宽度900px）
-  - 图片样式调整（宽度、边框、说明文字）
 
 - **阶段7：草稿系统**
   - 草稿列表管理界面
@@ -108,7 +116,7 @@
 ## 项目当前状态
 
 ### 完成度
-**总体进度：60%** (6/10个阶段完成)
+**总体进度：70%** (7/10个阶段完成)
 
 ### 技术栈（已实现）
 - **前端框架**：React 18.3.1 + TypeScript 5.6.2
@@ -125,12 +133,13 @@ wechat-editor/
 ├── src/
 │   ├── components/             # React组件
 │   │   ├── Header.tsx          # 顶部导航栏（带模板按钮）
-│   │   ├── StylePanel.tsx      # 样式工具栏（完整样式+主题选择）
-│   │   ├── Editor.tsx          # Quill编辑器（快捷键+自动保存）
+│   │   ├── StylePanel.tsx      # 样式工具栏（完整样式+主题选择+图片上传）
+│   │   ├── Editor.tsx          # Quill编辑器（快捷键+自动保存+拖拽上传）
 │   │   ├── Preview.tsx         # 预览区（手机视图+主题应用）
 │   │   ├── Toolbar.tsx         # 底部工具栏（复制+清空）
 │   │   ├── TemplateModal.tsx   # 模板选择弹窗
-│   │   └── SaveTemplateModal.tsx # 保存模板弹窗
+│   │   ├── SaveTemplateModal.tsx # 保存模板弹窗
+│   │   └── ImageUploadModal.tsx # 图片上传弹窗
 │   ├── contexts/
 │   │   └── EditorContext.tsx   # 全局状态（content, quill实例, theme）
 │   ├── hooks/                  # 自定义Hooks
@@ -140,11 +149,13 @@ wechat-editor/
 │   │   ├── useTheme.ts         # 主题管理
 │   │   ├── useCopyToClipboard.ts # 复制功能
 │   │   ├── useEditorCommands.ts # 编辑器命令
-│   │   └── useTemplates.ts     # 模板管理
+│   │   ├── useTemplates.ts     # 模板管理
+│   │   └── useImageUpload.ts   # 图片上传
 │   ├── utils/                  # 工具函数
 │   │   ├── storage.ts          # localStorage操作
-│   │   ├── wechat-html.ts      # 微信HTML转换引擎
+│   │   ├── wechat-html.ts      # 微信HTML转换引擎（含图片处理）
 │   │   ├── theme-styles.ts     # 主题CSS生成
+│   │   ├── imageProcessor.ts   # 图片压缩工具
 │   │   └── quill-divider.ts    # 自定义分割线Blot
 │   ├── types/                  # TypeScript类型
 │   │   ├── index.ts            # 基础类型
@@ -620,7 +631,7 @@ HTML转换: src/utils/wechat-html.ts
 
 ---
 
-**文档版本**：v2.0
+**文档版本**：v2.1
 **创建日期**：2025-12-30
-**最后更新**：2025-12-30 18:30
-**更新内容**：添加阶段5完成状态、技术挑战解决方案、快速恢复指南
+**最后更新**：2025-12-30 19:30
+**更新内容**：添加阶段6图片处理功能完成状态、更新项目结构
