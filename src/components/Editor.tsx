@@ -5,6 +5,7 @@ import '@/styles/quill-custom.css'
 import { useEditorContext } from '@/contexts/EditorContext'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useAutoSave } from '@/hooks/useAutoSave'
+import { useImageUpload } from '@/hooks/useImageUpload'
 import { saveCurrentDraft, loadCurrentDraft, formatRelativeTime, getLastSavedTime } from '@/utils/storage'
 import { registerDivider } from '@/utils/quill-divider'
 import { Save, Check } from 'lucide-react'
@@ -18,6 +19,8 @@ export default function Editor() {
   const { content, updateContent, setQuillInstance } = useEditorContext()
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [showSaveIndicator, setShowSaveIndicator] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const { uploadImage } = useImageUpload(quillRef.current)
 
   // 保存函数
   const handleSave = () => {
@@ -27,6 +30,38 @@ export default function Editor() {
       setLastSaved(new Date())
       setShowSaveIndicator(true)
       setTimeout(() => setShowSaveIndicator(false), 2000)
+    }
+  }
+
+  // 拖拽事件处理
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+
+    const files = e.dataTransfer.files
+    if (files.length === 0) return
+
+    // 只处理第一个图片文件
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (file.type.startsWith('image/')) {
+        try {
+          await uploadImage(file)
+        } catch (error) {
+          console.error('拖拽上传失败:', error)
+        }
+        break // 一次只上传一张
+      }
     }
   }
 
@@ -101,7 +136,22 @@ export default function Editor() {
   }, [updateContent, setQuillInstance])
 
   return (
-    <div className="flex-1 bg-white overflow-hidden flex flex-col">
+    <div
+      className="flex-1 bg-white overflow-hidden flex flex-col relative"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag Overlay */}
+      {isDragging && (
+        <div className="absolute inset-0 bg-primary bg-opacity-10 border-4 border-dashed border-primary z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-xl p-6 text-center">
+            <div className="text-primary text-lg font-medium mb-2">释放以上传图片</div>
+            <div className="text-sm text-gray-600">支持 JPG、PNG、GIF 格式</div>
+          </div>
+        </div>
+      )}
+
       <div className="border-b border-gray-200 px-4 py-2 bg-gray-50">
         <div className="flex items-center justify-between text-sm text-gray-600">
           <div className="flex items-center gap-3">

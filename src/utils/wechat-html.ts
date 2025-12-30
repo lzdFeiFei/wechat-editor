@@ -189,6 +189,15 @@ function processSpecialTags(element: HTMLElement, theme: Theme) {
     element.style.lineHeight = '1.75'
     element.style.margin = '12px 0'
   }
+
+  // 处理图片
+  if (tagName === 'img') {
+    element.style.maxWidth = '100%'
+    element.style.height = 'auto'
+    element.style.display = 'block'
+    element.style.margin = '10px auto'
+    // 保留图片的src属性（base64格式）
+  }
 }
 
 // 清理空标签

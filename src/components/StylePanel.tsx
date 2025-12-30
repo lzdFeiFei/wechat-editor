@@ -14,18 +14,21 @@ import {
   Quote,
   Minus,
   Sparkles,
+  Image,
 } from 'lucide-react'
 import { useEditorContext } from '@/contexts/EditorContext'
 import { useEditorCommands } from '@/hooks/useEditorCommands'
 import { TEXT_COLORS, BACKGROUND_COLORS } from '@/types/style'
 import { PRESET_THEMES } from '@/types/theme'
 import { useState } from 'react'
+import ImageUploadModal from './ImageUploadModal'
 
 export default function StylePanel() {
   const { quillInstance, currentTheme, applyTheme } = useEditorContext()
   const commands = useEditorCommands(quillInstance)
   const [showTextColors, setShowTextColors] = useState(false)
   const [showBgColors, setShowBgColors] = useState(false)
+  const [showImageUpload, setShowImageUpload] = useState(false)
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 overflow-y-auto">
@@ -226,6 +229,13 @@ export default function StylePanel() {
           </div>
           <div className="space-y-2">
             <button
+              onClick={() => setShowImageUpload(true)}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm bg-gray-50 hover:bg-primary hover:text-white rounded-md transition-colors"
+            >
+              <Image className="w-4 h-4" />
+              <span>插入图片</span>
+            </button>
+            <button
               onClick={commands.toggleBlockquote}
               className="w-full flex items-center gap-2 px-3 py-2 text-sm bg-gray-50 hover:bg-primary hover:text-white rounded-md transition-colors"
             >
@@ -286,6 +296,9 @@ export default function StylePanel() {
           </div>
         </div>
       </div>
+
+      {/* Image Upload Modal */}
+      <ImageUploadModal isOpen={showImageUpload} onClose={() => setShowImageUpload(false)} />
     </div>
   )
 }
