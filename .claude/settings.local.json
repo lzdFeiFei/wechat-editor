@@ -20,7 +20,8 @@
       "Skill(code-review)",
       "Skill(prompt-optimizer)",
       "Skill(dev-docs)",
-      "Bash(npx tailwindcss:*)"
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm run build:*)"
     ]
   }
 }

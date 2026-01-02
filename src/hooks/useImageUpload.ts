@@ -1,5 +1,11 @@
+/**
+ * useImageUpload Hook - Tiptap Version
+ *
+ * Provides image upload functionality for the Tiptap editor
+ */
+
 import { useState, useCallback } from 'react'
-import Quill from 'quill'
+import type { Editor } from '@tiptap/react'
 import {
   compressImage,
   type CompressOptions,
@@ -16,7 +22,7 @@ export interface UploadState {
 /**
  * 图片上传Hook
  */
-export function useImageUpload(quillInstance: Quill | null) {
+export function useImageUpload(editor: Editor | null) {
   const [uploadState, setUploadState] = useState<UploadState>({
     isUploading: false,
     progress: 0,
@@ -29,19 +35,24 @@ export function useImageUpload(quillInstance: Quill | null) {
    */
   const insertImage = useCallback(
     (dataUrl: string, width?: number) => {
-      if (!quillInstance) return
+      if (!editor) return
 
-      const range = quillInstance.getSelection()
-      const index = range ? range.index : quillInstance.getLength()
-
-      // 插入图片
-      quillInstance.insertEmbed(index, 'image', dataUrl)
+      // 使用 Tiptap 的 setImage 命令插入图片
+      editor
+        .chain()
+        .focus()
+        .setImage({
+          src: dataUrl,
+          alt: '图片',
+          title: '',
+        })
+        .run()
 
       // 如果指定了宽度，设置图片样式
       if (width) {
-        // 获取刚插入的图片元素
+        // 获取刚插入的图片元素并设置样式
         setTimeout(() => {
-          const editorElement = quillInstance.root
+          const editorElement = editor.view.dom
           const images = editorElement.querySelectorAll('img')
           const lastImage = images[images.length - 1] as HTMLImageElement
           if (lastImage) {
@@ -54,11 +65,10 @@ export function useImageUpload(quillInstance: Quill | null) {
         }, 0)
       }
 
-      // 在图片后插入换行
-      quillInstance.insertText(index + 1, '\n')
-      quillInstance.setSelection(index + 2, 0)
+      // 在图片后插入段落（Tiptap 通常会自动处理）
+      editor.chain().focus().enter().run()
     },
-    [quillInstance]
+    [editor]
   )
 
   /**
@@ -66,7 +76,7 @@ export function useImageUpload(quillInstance: Quill | null) {
    */
   const uploadImage = useCallback(
     async (file: File, options?: CompressOptions) => {
-      if (!quillInstance) {
+      if (!editor) {
         setUploadState(prev => ({
           ...prev,
           error: '编辑器未初始化',
@@ -115,7 +125,7 @@ export function useImageUpload(quillInstance: Quill | null) {
         throw error
       }
     },
-    [quillInstance, insertImage]
+    [editor, insertImage]
   )
 
   /**

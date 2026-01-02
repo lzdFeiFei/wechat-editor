@@ -24,8 +24,8 @@ import { useState } from 'react'
 import ImageUploadModal from './ImageUploadModal'
 
 export default function StylePanel() {
-  const { quillInstance, currentTheme, applyTheme } = useEditorContext()
-  const commands = useEditorCommands(quillInstance)
+  const { editor, currentTheme, applyTheme } = useEditorContext()
+  const commands = useEditorCommands(editor)
   const [showTextColors, setShowTextColors] = useState(false)
   const [showBgColors, setShowBgColors] = useState(false)
   const [showImageUpload, setShowImageUpload] = useState(false)

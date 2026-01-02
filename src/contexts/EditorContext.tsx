@@ -1,14 +1,20 @@
+/**
+ * EditorContext - Updated for Tiptap
+ *
+ * Provides editor instance and theme management to child components
+ */
+
 import { createContext, useContext, ReactNode, useState, useCallback } from 'react'
 import { useEditor, EditorContent } from '@/hooks/useEditor'
 import { useTheme } from '@/hooks/useTheme'
 import { Theme } from '@/types/theme'
-import Quill from 'quill'
+import type { Editor } from '@tiptap/react'
 
 interface EditorContextType {
   content: EditorContent
   updateContent: (html: string, text: string) => void
-  quillInstance: Quill | null
-  setQuillInstance: (quill: Quill | null) => void
+  editor: Editor | null
+  setEditor: (editor: Editor | null) => void
   currentTheme: Theme
   applyTheme: (theme: Theme) => void
 }
@@ -16,23 +22,29 @@ interface EditorContextType {
 const EditorContext = createContext<EditorContextType | undefined>(undefined)
 
 export function EditorProvider({ children }: { children: ReactNode }) {
-  const editor = useEditor()
+  const editorContent = useEditor()
   const theme = useTheme()
-  const [quillInstance, setQuillInstanceState] = useState<Quill | null>(null)
+  const [editor, setEditorState] = useState<Editor | null>(null)
 
-  const setQuillInstance = useCallback((quill: Quill | null) => {
-    setQuillInstanceState(quill)
+  const setEditor = useCallback((editorInstance: Editor | null) => {
+    setEditorState(editorInstance)
   }, [])
 
   return (
     <EditorContext.Provider
-      value={{ ...editor, quillInstance, setQuillInstance, ...theme }}
+      value={{
+        ...editorContent,
+        editor,
+        setEditor,
+        ...theme
+      }}
     >
       {children}
     </EditorContext.Provider>
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useEditorContext() {
   const context = useContext(EditorContext)
   if (!context) {

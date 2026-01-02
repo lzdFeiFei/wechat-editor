@@ -6,7 +6,7 @@ import { clearCurrentDraft } from '@/utils/storage'
 import { useState } from 'react'
 
 export default function Toolbar() {
-  const { content, currentTheme, quillInstance } = useEditorContext()
+  const { content, currentTheme, editor } = useEditorContext()
   const { copyHTML, isCopying } = useCopyToClipboard()
   const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [showTip, setShowTip] = useState(false)
@@ -41,8 +41,8 @@ export default function Toolbar() {
   // 处理清空
   const handleClear = () => {
     if (window.confirm('确定要清空所有内容吗？此操作无法撤销。')) {
-      if (quillInstance) {
-        quillInstance.setText('')
+      if (editor) {
+        editor.commands.clearContent()
         clearCurrentDraft()
       }
     }

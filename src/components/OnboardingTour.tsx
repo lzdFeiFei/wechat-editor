@@ -68,12 +68,14 @@ export default function OnboardingTour({ onComplete }: OnboardingTourProps) {
         updateTargetRect()
       }, 1000)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     if (isVisible) {
       updateTargetRect()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep, isVisible])
 
   const updateTargetRect = () => {

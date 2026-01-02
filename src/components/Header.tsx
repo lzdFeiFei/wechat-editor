@@ -27,17 +27,17 @@ export default function Header() {
     renameDraftTitle,
     searchDraftsByText,
   } = useDrafts()
-  const { quillInstance, content, currentTheme, applyTheme } = useEditorContext()
+  const { editor, content, currentTheme, applyTheme } = useEditorContext()
 
   // 应用模板
   const handleApplyTemplate = (template: Template) => {
-    if (!quillInstance) return
+    if (!editor) return
 
     // 应用主题
     applyTheme(template.theme)
 
     // 设置内容
-    quillInstance.root.innerHTML = template.content
+    editor.commands.setContent(template.content)
   }
 
   // 保存为模板
@@ -51,13 +51,13 @@ export default function Header() {
 
   // 加载草稿
   const handleLoadDraft = (draft: Draft) => {
-    if (!quillInstance) return
+    if (!editor) return
 
     // 应用主题
     applyTheme(draft.theme)
 
     // 设置内容
-    quillInstance.root.innerHTML = draft.content
+    editor.commands.setContent(draft.content)
   }
 
   // 创建新草稿

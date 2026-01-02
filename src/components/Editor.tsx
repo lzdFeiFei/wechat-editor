@@ -1,143 +1,139 @@
-import { useEffect, useRef, useState } from 'react'
-import Quill from 'quill'
-import 'quill/dist/quill.snow.css'
-import '@/styles/quill-custom.css'
+/**
+ * Editor Component - Tiptap Version
+ *
+ * Main editor component using Tiptap instead of Quill.
+ * Supports Markdown, drag-and-drop image upload, auto-save, keyboard shortcuts.
+ */
+
+import { useEffect, useState, useCallback } from 'react'
+import { EditorContent } from '@tiptap/react'
+import '@/styles/tiptap-custom.css'
 import { useEditorContext } from '@/contexts/EditorContext'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useAutoSave } from '@/hooks/useAutoSave'
-import { useImageUpload } from '@/hooks/useImageUpload'
+import { useTiptapEditor } from '@/hooks/useTiptapEditor'
 import { saveCurrentDraft, loadCurrentDraft, formatRelativeTime, getLastSavedTime } from '@/utils/storage'
-import { registerDivider } from '@/utils/quill-divider'
 import { Save, Check } from 'lucide-react'
 
-// 注册自定义 Blot
-registerDivider()
-
 export default function Editor() {
-  const editorRef = useRef<HTMLDivElement>(null)
-  const quillRef = useRef<Quill | null>(null)
-  const { content, updateContent, setQuillInstance } = useEditorContext()
+  const { content, updateContent, setEditor } = useEditorContext()
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [showSaveIndicator, setShowSaveIndicator] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
-  const { uploadImage } = useImageUpload(quillRef.current)
 
-  // 保存函数
-  const handleSave = () => {
-    if (quillRef.current) {
-      const html = quillRef.current.root.innerHTML
+  // Handle content update
+  const handleUpdate = useCallback(
+    (html: string, text: string) => {
+      updateContent(html, text)
+    },
+    [updateContent]
+  )
+
+  // Initialize Tiptap editor
+  const editor = useTiptapEditor({
+    content: '',
+    onUpdate: handleUpdate,
+    editable: true,
+  })
+
+  // Save function
+  const handleSave = useCallback(() => {
+    if (editor) {
+      const html = editor.getHTML()
       saveCurrentDraft(html)
       setLastSaved(new Date())
       setShowSaveIndicator(true)
       setTimeout(() => setShowSaveIndicator(false), 2000)
     }
-  }
+  }, [editor])
 
-  // 拖拽事件处理
-  const handleDragOver = (e: React.DragEvent) => {
+  // Image upload function
+  const handleImageUpload = useCallback(
+    async (file: File) => {
+      if (!editor) return
+
+      try {
+        // Convert image to Base64
+        const reader = new FileReader()
+        reader.onload = e => {
+          const dataUrl = e.target?.result as string
+          if (dataUrl) {
+            // Insert image using Tiptap Image extension
+            editor.chain().focus().setImage({ src: dataUrl }).run()
+          }
+        }
+        reader.readAsDataURL(file)
+      } catch (error) {
+        console.error('Image upload failed:', error)
+      }
+    },
+    [editor]
+  )
+
+  // Drag and drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(true)
-  }
+  }, [])
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-  }
+  }, [])
 
-  const handleDrop = async (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault()
+      setIsDragging(false)
 
-    const files = e.dataTransfer.files
-    if (files.length === 0) return
+      const files = e.dataTransfer.files
+      if (files.length === 0) return
 
-    // 只处理第一个图片文件
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      if (file.type.startsWith('image/')) {
-        try {
-          await uploadImage(file)
-        } catch (error) {
-          console.error('拖拽上传失败:', error)
+      // Process image files
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        if (file.type.startsWith('image/')) {
+          await handleImageUpload(file)
+          break // Upload one at a time
         }
-        break // 一次只上传一张
       }
-    }
-  }
+    },
+    [handleImageUpload]
+  )
 
-  // 快捷键支持
-  useKeyboardShortcuts(quillRef.current, handleSave)
+  // Keyboard shortcuts
+  useKeyboardShortcuts(editor, handleSave)
 
-  // 自动保存（每30秒）
+  // Auto-save every 30 seconds
   useAutoSave(content.html, handleSave, { delay: 30000 })
 
+  // Initialize editor and load saved content
   useEffect(() => {
-    if (editorRef.current && !quillRef.current) {
-      // 初始化 Quill 编辑器
-      quillRef.current = new Quill(editorRef.current, {
-        theme: 'snow',
-        placeholder: '在这里开始编辑你的文章...\n\n快捷键提示：\nCtrl+B 加粗 | Ctrl+I 斜体 | Ctrl+U 下划线\nCtrl+Z 撤销 | Ctrl+Y 重做 | Ctrl+S 保存',
-        modules: {
-          toolbar: [
-            [{ header: [1, 2, 3, false] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ list: 'ordered' }, { list: 'bullet' }],
-            [{ align: [] }],
-            ['link', 'image'],
-            ['clean'],
-          ],
-          history: {
-            delay: 1000,
-            maxStack: 100,
-            userOnly: true,
-          },
-          clipboard: {
-            matchVisual: false, // 粘贴时不保留视觉格式
-          },
-        },
-      })
+    if (editor) {
+      // Set editor instance to context
+      setEditor(editor)
 
-      // 将 quill 实例添加到 context
-      setQuillInstance(quillRef.current)
-
-      // 加载之前保存的内容
+      // Load saved draft
       const savedContent = loadCurrentDraft()
       if (savedContent) {
-        quillRef.current.root.innerHTML = savedContent
+        editor.commands.setContent(savedContent)
         const lastSavedTime = getLastSavedTime()
         if (lastSavedTime) {
           setLastSaved(lastSavedTime)
         }
       }
-
-      // 监听内容变化
-      quillRef.current.on('text-change', () => {
-        if (quillRef.current) {
-          const html = quillRef.current.root.innerHTML
-          const text = quillRef.current.getText()
-          updateContent(html, text)
-        }
-      })
-
-      // 粘贴时清除格式
-      quillRef.current.clipboard.addMatcher(Node.ELEMENT_NODE, (node) => {
-        const plaintext = (node as HTMLElement).textContent || ''
-        const Delta = Quill.import('delta') as any
-        return new Delta().insert(plaintext)
-      })
     }
 
     return () => {
-      if (quillRef.current) {
-        setQuillInstance(null)
-        quillRef.current = null
+      if (editor) {
+        setEditor(null)
       }
     }
-  }, [updateContent, setQuillInstance])
+  }, [editor, setEditor])
 
   return (
     <div
-      className="flex-1 bg-white overflow-hidden flex flex-col relative"
+      className="flex-1 bg-white flex flex-col relative"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -152,6 +148,7 @@ export default function Editor() {
         </div>
       )}
 
+      {/* Editor Header */}
       <div className="border-b border-gray-200 px-4 py-2 bg-gray-50">
         <div className="flex items-center justify-between text-sm text-gray-600">
           <div className="flex items-center gap-3">
@@ -174,8 +171,10 @@ export default function Editor() {
           </span>
         </div>
       </div>
-      <div className="flex-1 overflow-y-auto">
-        <div ref={editorRef} className="h-full" />
+
+      {/* Tiptap Editor */}
+      <div className="flex-1 min-h-0 overflow-auto">
+        <EditorContent editor={editor} className="h-full tiptap-editor" />
       </div>
     </div>
   )

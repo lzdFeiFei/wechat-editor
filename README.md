@@ -105,16 +105,34 @@ npm run preview
 - ✅ 自定义模板管理（删除）
 - ✅ 模板本地持久化
 
-### 🚧 开发中
-
 #### 图片处理
-- ⏳ 图片上传
-- ⏳ 图片压缩
-- ⏳ 图片样式
+- ✅ 图片上传（支持拖拽）
+- ✅ Canvas API 图片压缩
+- ✅ 压缩质量和尺寸控制
+- ✅ 上传进度和状态显示
+- ✅ Base64 格式嵌入（微信兼容）
 
 #### 草稿系统
-- ⏳ 草稿列表管理
-- ⏳ 草稿重命名/删除
+- ✅ 草稿自动保存（最多10个）
+- ✅ 草稿列表管理
+- ✅ 草稿搜索功能
+- ✅ 草稿重命名/删除
+- ✅ 草稿加载和恢复
+- ✅ 草稿元数据显示（字数、时间）
+
+#### 用户体验优化
+- ✅ 新手引导系统（6步教程）
+- ✅ 帮助文档弹窗
+  - 快捷键说明
+  - 常见问题解答
+  - 使用技巧
+  - 关于信息
+- ✅ Toast 通知系统
+  - 成功/错误/警告/提示四种类型
+  - 自动消失和手动关闭
+- ✅ 导入/导出功能
+  - JSON 格式导出
+  - 文件导入恢复
 
 ## 🛠️ 技术栈
 
@@ -138,24 +156,38 @@ wechat-editor/
 │   │   ├── Preview.tsx         # 预览区
 │   │   ├── Toolbar.tsx         # 底部工具栏
 │   │   ├── TemplateModal.tsx   # 模板选择弹窗
-│   │   └── SaveTemplateModal.tsx # 保存模板弹窗
+│   │   ├── SaveTemplateModal.tsx # 保存模板弹窗
+│   │   ├── ImageUploadModal.tsx # 图片上传弹窗
+│   │   ├── DraftListModal.tsx  # 草稿列表弹窗
+│   │   ├── OnboardingTour.tsx  # 新手引导
+│   │   ├── HelpModal.tsx       # 帮助文档弹窗
+│   │   ├── Toast.tsx           # Toast 通知
+│   │   └── ToastContainer.tsx  # Toast 容器
 │   ├── contexts/               # React Context
 │   │   └── EditorContext.tsx
 │   ├── hooks/                  # 自定义 Hooks
 │   │   ├── useEditor.ts
 │   │   ├── useKeyboardShortcuts.ts
 │   │   ├── useAutoSave.ts
-│   │   └── useTemplates.ts     # 模板管理
+│   │   ├── useTemplates.ts     # 模板管理
+│   │   ├── useImageUpload.ts   # 图片上传
+│   │   ├── useDrafts.ts        # 草稿管理
+│   │   └── useToast.ts         # Toast 通知
 │   ├── utils/                  # 工具函数
 │   │   ├── storage.ts          # 本地存储
 │   │   ├── wechat-html.ts      # 微信HTML转换
 │   │   ├── theme-styles.ts     # 主题样式生成
-│   │   └── quill-divider.ts    # 自定义分割线
+│   │   ├── quill-divider.ts    # 自定义分割线
+│   │   ├── imageProcessor.ts   # 图片处理
+│   │   ├── draftStorage.ts     # 草稿存储
+│   │   └── tourStorage.ts      # 引导存储
 │   ├── types/                  # TypeScript 类型
 │   │   ├── index.ts
 │   │   ├── style.ts
 │   │   ├── theme.ts
-│   │   └── template.ts         # 模板类型
+│   │   ├── template.ts         # 模板类型
+│   │   ├── draft.ts            # 草稿类型
+│   │   └── toast.ts            # Toast 类型
 │   ├── styles/                 # 样式文件
 │   │   └── quill-custom.css
 │   ├── App.tsx                 # 主应用组件
@@ -163,7 +195,9 @@ wechat-editor/
 │   └── index.css               # 全局样式
 ├── public/                     # 静态资源
 ├── .claude/                    # Claude Code 配置
-└── dev/                        # 开发文档
+├── dev/                        # 开发文档
+├── vercel.json                 # Vercel 部署配置
+└── netlify.toml                # Netlify 部署配置
 
 ```
 
@@ -195,14 +229,34 @@ wechat-editor/
 - [x] 模板应用功能
 - [x] 自定义模板保存
 
-### 阶段6：图片处理 ⏳
-### 阶段7：草稿系统 ⏳
+### 阶段6：图片处理 ✅
+- [x] 图片上传组件
+- [x] Canvas 图片压缩
+- [x] 拖拽上传支持
+- [x] Base64 格式嵌入
+
+### 阶段7：草稿系统 ✅
+- [x] 草稿存储系统
+- [x] 草稿列表管理
+- [x] 搜索和过滤
+- [x] 重命名和删除
+
 ### 阶段8：一键复制功能 ✅
 - [x] HTML 生成和清理
 - [x] 复制功能实现
 - [x] 兼容性处理
-### 阶段9：用户体验优化 ⏳
-### 阶段10：测试和发布 ⏳
+
+### 阶段9：用户体验优化 ✅
+- [x] 新手引导系统
+- [x] 帮助文档弹窗
+- [x] Toast 通知系统
+- [x] 导入/导出功能
+
+### 阶段10：测试和发布 ✅
+- [x] 代码质量检查（ESLint）
+- [x] 类型检查（TypeScript）
+- [x] 生产构建优化
+- [x] 部署配置（Vercel/Netlify）
 
 ## 📝 开发日志
 
@@ -250,6 +304,72 @@ wechat-editor/
 - 自定义模板保存系统
 - 自定义模板管理（删除功能）
 - 模板本地持久化存储
+
+**阶段6完成**：
+- 实现图片压缩工具（Canvas API）
+- 创建图片上传弹窗组件
+- 支持拖拽上传图片
+- 压缩质量和尺寸控制（最大900px宽度）
+- Base64 格式嵌入（微信兼容）
+- 上传进度和状态显示
+
+**阶段7完成**：
+- 实现草稿存储系统（最多10个）
+- 创建草稿管理 Hook
+- 实现草稿列表弹窗
+- 草稿搜索和过滤功能
+- 草稿重命名和删除
+- 草稿元数据显示（字数、创建/更新时间）
+
+**阶段9完成**：
+- 实现新手引导系统（6步教程）
+- 创建帮助文档弹窗（快捷键/FAQ/技巧/关于）
+- 实现 Toast 通知系统（4种类型）
+- 添加导入/导出功能（JSON 格式）
+
+**阶段10完成**：
+- 修复所有 ESLint 错误和警告
+- TypeScript 类型检查通过
+- 生产构建优化（428.39 KB bundle）
+- 创建 Vercel 和 Netlify 部署配置
+- 完成项目文档
+
+## 🚀 部署
+
+### Vercel 部署
+
+1. 推送代码到 GitHub
+2. 在 [Vercel](https://vercel.com) 导入项目
+3. Vercel 会自动检测 `vercel.json` 配置并部署
+
+或使用 Vercel CLI：
+
+```bash
+npm i -g vercel
+vercel
+```
+
+### Netlify 部署
+
+1. 推送代码到 GitHub
+2. 在 [Netlify](https://netlify.com) 导入项目
+3. Netlify 会自动检测 `netlify.toml` 配置并部署
+
+或使用 Netlify CLI：
+
+```bash
+npm i -g netlify-cli
+netlify deploy --prod
+```
+
+### 构建配置
+
+- **构建命令**: `npm run build`
+- **输出目录**: `dist`
+- **SPA 路由**: 已配置 `/*` 重定向到 `/index.html`
+- **缓存策略**:
+  - 静态资源 (`/assets/*`): 1年缓存
+  - HTML 文件: 无缓存
 
 ## 📄 许可证
 

@@ -1,56 +1,50 @@
-import { useEffect } from 'react'
-import Quill from 'quill'
+/**
+ * useKeyboardShortcuts Hook - Tiptap Version
+ *
+ * Handles keyboard shortcuts for the Tiptap editor
+ */
 
-export function useKeyboardShortcuts(quill: Quill | null, onSave?: () => void) {
+import { useEffect } from 'react'
+import type { Editor } from '@tiptap/react'
+
+export function useKeyboardShortcuts(editor: Editor | null, onSave?: () => void) {
   useEffect(() => {
-    if (!quill) return
+    if (!editor) return
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl/Cmd 键
+      // Ctrl/Cmd key
       const isCtrlOrCmd = e.ctrlKey || e.metaKey
 
       if (!isCtrlOrCmd) return
 
       switch (e.key.toLowerCase()) {
         case 'b':
-          // Ctrl+B: 加粗
-          e.preventDefault()
-          quill.format('bold', !quill.getFormat().bold)
+          // Ctrl+B: Bold (Tiptap handles this natively, but we prevent double handling)
+          // Let Tiptap's built-in handler take care of it
           break
 
         case 'i':
-          // Ctrl+I: 斜体
-          e.preventDefault()
-          quill.format('italic', !quill.getFormat().italic)
+          // Ctrl+I: Italic
+          // Let Tiptap's built-in handler take care of it
           break
 
         case 'u':
-          // Ctrl+U: 下划线
-          e.preventDefault()
-          quill.format('underline', !quill.getFormat().underline)
+          // Ctrl+U: Underline
+          // Let Tiptap's built-in handler take care of it
           break
 
         case 'z':
-          // Ctrl+Z: 撤销
-          if (e.shiftKey) {
-            // Ctrl+Shift+Z: 重做
-            e.preventDefault()
-            quill.history.redo()
-          } else {
-            // Ctrl+Z: 撤销
-            e.preventDefault()
-            quill.history.undo()
-          }
+          // Ctrl+Z: Undo / Ctrl+Shift+Z: Redo
+          // Let Tiptap's built-in handler take care of it
           break
 
         case 'y':
-          // Ctrl+Y: 重做
-          e.preventDefault()
-          quill.history.redo()
+          // Ctrl+Y: Redo
+          // Let Tiptap's built-in handler take care of it
           break
 
         case 's':
-          // Ctrl+S: 保存
+          // Ctrl+S: Save
           e.preventDefault()
           if (onSave) {
             onSave()
@@ -58,14 +52,11 @@ export function useKeyboardShortcuts(quill: Quill | null, onSave?: () => void) {
           break
 
         case 'k':
-          // Ctrl+K: 插入链接
+          // Ctrl+K: Insert Link
           e.preventDefault()
           const url = prompt('请输入链接地址:')
           if (url) {
-            const selection = quill.getSelection()
-            if (selection) {
-              quill.format('link', url)
-            }
+            editor.chain().focus().setLink({ href: url }).run()
           }
           break
 
@@ -79,5 +70,5 @@ export function useKeyboardShortcuts(quill: Quill | null, onSave?: () => void) {
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [quill, onSave])
+  }, [editor, onSave])
 }

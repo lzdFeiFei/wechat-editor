@@ -10,8 +10,8 @@ interface ImageUploadModalProps {
 }
 
 export default function ImageUploadModal({ isOpen, onClose }: ImageUploadModalProps) {
-  const { quillInstance } = useEditorContext()
-  const { uploadState, uploadImage, resetState } = useImageUpload(quillInstance)
+  const { editor } = useEditorContext()
+  const { uploadState, uploadImage, resetState } = useImageUpload(editor)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
   const [maxWidth, setMaxWidth] = useState(900)
