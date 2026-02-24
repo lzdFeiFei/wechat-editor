@@ -46,6 +46,7 @@ const colorFields: Array<{ key: keyof StyleConfig; label: string }> = [
   { key: "primaryColor", label: "Primary Color" },
   { key: "secondaryColor", label: "Secondary Color" },
   { key: "textColor", label: "Text Color" },
+  { key: "listMarkerColor", label: "List Marker Color" },
   { key: "quoteBgColor", label: "Quote Background" },
   { key: "quoteBorderColor", label: "Quote Border" },
   { key: "headingBorderLeftColor", label: "Heading Border Color" },

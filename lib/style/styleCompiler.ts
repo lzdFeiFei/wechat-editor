@@ -74,12 +74,15 @@ export function blockquoteStyle(c: StyleConfig): string {
   ]);
 }
 
-export function listStyle(c: StyleConfig): string {
+export function listStyle(tag: "ul" | "ol", c: StyleConfig): string {
+  const type = tag === "ul" ? "disc" : "decimal";
   return compactStyle([
     `margin:0 0 ${c.paragraphSpacing}px 0;`,
     `padding-left:1.35em;`,
+    `list-style-type:${type};`,
+    "list-style-position:outside;",
+    `color:${c.listMarkerColor};`,
     `line-height:${Math.max(c.lineHeight, 1.8)};`,
-    `color:${c.textColor};`,
     `font-family:${c.bodyFontFamily};`,
   ]);
 }

@@ -15,6 +15,12 @@ export default function Home() {
   const [mode, setMode] = useState<RenderMode>("standard");
   const [styleConfig, setStyleConfig] = useState(defaultStyleConfig);
   const [copied, setCopied] = useState<string>("");
+  const [syncScroll, setSyncScroll] = useState(true);
+  const [scrollRatio, setScrollRatio] = useState(0);
+
+  const previewCardWidth = 375;
+  const previewCardPadding = 16;
+  const contentWidth = previewCardWidth - previewCardPadding * 2;
 
   const normalizedConfig = useMemo(() => validateStyleConfig(styleConfig), [styleConfig]);
 
@@ -134,6 +140,14 @@ export default function Home() {
               >
                 Export styleConfig.json
               </button>
+              <button
+                onClick={() => setSyncScroll((prev) => !prev)}
+                className={`rounded-lg px-3 py-2 text-sm font-medium ${
+                  syncScroll ? "bg-indigo-700 text-white hover:bg-indigo-600" : "border border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100"
+                }`}
+              >
+                {syncScroll ? "Scroll Sync On" : "Scroll Sync Off"}
+              </button>
             </div>
           </div>
           <p className="mt-2 h-5 text-xs text-emerald-600">{copied}</p>
@@ -142,9 +156,33 @@ export default function Home() {
         <FormatInspector baseStyleConfig={normalizedConfig} onImport={handleImportFromInspector} />
 
         <section className="grid min-h-[calc(100vh-145px)] grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.85fr_1fr]">
-          <MarkdownEditor value={markdown} onChange={setMarkdown} />
+          <MarkdownEditor
+            value={markdown}
+            onChange={setMarkdown}
+            contentWidth={contentWidth}
+            fontSize={normalizedConfig.bodyFontSize}
+            lineHeight={normalizedConfig.lineHeight}
+            fontFamily={normalizedConfig.bodyFontFamily}
+            syncEnabled={syncScroll}
+            scrollRatio={scrollRatio}
+            onScrollRatioChange={(ratio) => {
+              if (syncScroll) {
+                setScrollRatio(ratio);
+              }
+            }}
+          />
           <StylePanel value={normalizedConfig} onChange={setStyleConfig} />
-          <PreviewPanel html={html} />
+          <PreviewPanel
+            html={html}
+            cardWidth={previewCardWidth}
+            syncEnabled={syncScroll}
+            scrollRatio={scrollRatio}
+            onScrollRatioChange={(ratio) => {
+              if (syncScroll) {
+                setScrollRatio(ratio);
+              }
+            }}
+          />
         </section>
       </div>
     </main>

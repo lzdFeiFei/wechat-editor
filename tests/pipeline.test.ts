@@ -19,4 +19,10 @@ describe("renderMarkdown", () => {
     const html = renderMarkdown(markdown, defaultStyleConfig, "standard");
     expect(html).toContain("max-width:100%");
   });
+
+  it("applies emphasis color to strong text", () => {
+    const markdown = "这是 **注意力才是最稀缺的资源**。";
+    const html = renderMarkdown(markdown, defaultStyleConfig, "standard");
+    expect(html).toContain(`<strong style="color:${defaultStyleConfig.primaryColor}; font-weight:600;">`);
+  });
 });

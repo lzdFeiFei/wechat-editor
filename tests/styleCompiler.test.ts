@@ -24,7 +24,9 @@ describe("styleCompiler", () => {
 
   it("generates block and list styles", () => {
     expect(blockquoteStyle(defaultStyleConfig)).toContain("border-left:4px");
-    expect(listStyle(defaultStyleConfig)).toContain("padding-left:1.35em");
+    expect(listStyle("ul", defaultStyleConfig)).toContain("list-style-type:disc");
+    expect(listStyle("ol", defaultStyleConfig)).toContain("list-style-type:decimal");
+    expect(listStyle("ul", defaultStyleConfig)).toContain("padding-left:1.35em");
   });
 
   it("generates image and code styles", () => {

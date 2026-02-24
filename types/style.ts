@@ -25,6 +25,7 @@ export interface StyleConfig {
   primaryColor: string;
   secondaryColor: string;
   textColor: string;
+  listMarkerColor: string;
   blockRadius: number;
   blockPadding: number;
   quoteFontSize: number;

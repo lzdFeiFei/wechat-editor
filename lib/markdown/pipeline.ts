@@ -46,13 +46,15 @@ function inlineStylePlugin(config: StyleConfig) {
           assignStyle(node, blockquoteStyle(config));
           break;
         case "ul":
+          assignStyle(node, listStyle("ul", config));
+          break;
         case "ol":
-          assignStyle(node, listStyle(config));
+          assignStyle(node, listStyle("ol", config));
           break;
         case "li":
           assignStyle(
             node,
-            `margin:8px 0; line-height:${Math.max(config.lineHeight, 1.8)}; font-family:${config.bodyFontFamily};`,
+            `display:list-item; margin:8px 0; line-height:${Math.max(config.lineHeight, 1.8)}; color:${config.textColor}; font-family:${config.bodyFontFamily};`,
           );
           break;
         case "img":
@@ -63,6 +65,9 @@ function inlineStylePlugin(config: StyleConfig) {
           break;
         case "code":
           assignStyle(node, "font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;");
+          break;
+        case "strong":
+          assignStyle(node, `color:${config.primaryColor}; font-weight:600;`);
           break;
         case "a":
           assignStyle(node, `color:${config.primaryColor}; text-decoration:underline; word-break:break-all;`);

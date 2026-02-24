@@ -318,6 +318,7 @@ export function inferStyleConfigFromHtml(
   const hrHeight = toNumber(pickProperty("hr", "height"));
   const hrBackground = pickProperty("hr", "background");
   const hrBorderTop = pickProperty("hr", "border-top");
+  const listMarkerColor = pickProperty("ul,ol", "color");
 
   return {
     bodyFontSize: paragraphSize ?? fallback.bodyFontSize,
@@ -352,6 +353,7 @@ export function inferStyleConfigFromHtml(
     primaryColor: primaryColor ?? fallback.primaryColor,
     secondaryColor: secondaryColor ?? fallback.secondaryColor,
     textColor: textColor ?? fallback.textColor,
+    listMarkerColor: listMarkerColor ?? fallback.listMarkerColor,
     blockRadius: blockRadius ?? fallback.blockRadius,
     blockPadding: blockPadding ?? fallback.blockPadding,
     quoteFontSize: quoteFontSize ?? fallback.quoteFontSize,

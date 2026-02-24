@@ -28,6 +28,7 @@ export const defaultStyleConfig: StyleConfig = {
   primaryColor: "#1f2937",
   secondaryColor: "#4b5563",
   textColor: "#111827",
+  listMarkerColor: "#002fa7",
   blockRadius: 8,
   blockPadding: 14,
   quoteFontSize: 15,
@@ -98,8 +99,8 @@ const numericRules: Record<keyof Pick<StyleConfig,
 };
 
 const colorFields: Array<keyof Pick<StyleConfig,
-  "primaryColor" | "secondaryColor" | "textColor" | "quoteBgColor" | "quoteBorderColor" | "headingBorderLeftColor"
->> = ["primaryColor", "secondaryColor", "textColor", "quoteBgColor", "quoteBorderColor", "headingBorderLeftColor"];
+  "primaryColor" | "secondaryColor" | "textColor" | "listMarkerColor" | "quoteBgColor" | "quoteBorderColor" | "headingBorderLeftColor"
+>> = ["primaryColor", "secondaryColor", "textColor", "listMarkerColor", "quoteBgColor", "quoteBorderColor", "headingBorderLeftColor"];
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
