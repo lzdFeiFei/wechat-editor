@@ -118,6 +118,63 @@ pnpm build
 - 关键渲染路径性能优化
 - CI 自动化校验
 
+### E. 精细化样式编辑（上下文面板 + 节点覆盖）
+
+- 右侧预览支持节点选中（点击/键盘定位到 h2/h3/p/li/img 等）
+- 中间面板按“当前选中节点类型”动态过滤配置项  
+  例如选中 `h3` 时，仅显示 h3 相关字段，减少大而全面板的认知负担
+- 引入“全局样式 + 局部覆盖”双层模型  
+  全局继续由 `StyleConfig` 提供，局部通过 `styleOverrides` 覆盖
+- 支持同类型节点的个性化样式  
+  例如：第 1 个 h3 为红色，第 2 个 h3 为黄色
+
+建议数据结构（草案）：
+
+```ts
+type NodeKey = string; // 例如 AST path 或稳定节点 id
+
+interface EditorStyleState {
+  global: StyleConfig;
+  overrides: Record<NodeKey, Partial<StyleConfig>>;
+}
+```
+
+建议实现步骤（记录）：
+
+1. 在渲染阶段为可编辑节点注入稳定 `data-node-id`
+2. 预览区支持选中节点并高亮，回传 `activeNodeId + activeNodeType`
+3. 中间面板按 `activeNodeType` 显示字段分组
+4. 面板改动优先写入 `overrides[activeNodeId]`，未覆盖字段回退 `global`
+5. 导出时把全局样式与局部覆盖合并为最终 inline style
+
+### F. 样式模板（按序号自动应用）
+
+- 支持将当前样式配置保存为模板（Template）
+- 支持“按元素出现顺序”定义覆盖规则  
+  例如：`h1[1]=红色`、`h1[2]=黄色`、`h1[3]=绿色`
+- 新文章应用模板时，自动把 `h1/h2/h3` 的指定序号规则套到对应节点
+- 目标：减少每次在公众号后台重复手工调样式的成本
+
+建议模板结构（草案）：
+
+```ts
+interface StyleTemplate {
+  name: string;
+  global: StyleConfig;
+  sequenceRules: Array<{
+    selector: "h1" | "h2" | "h3";
+    index: number; // 第几个同类节点（从 1 开始）
+    patch: Partial<StyleConfig>;
+  }>;
+}
+```
+
+建议实现阶段（记录）：
+
+1. 模板保存/加载（本地存储，后续可扩展云端）
+2. 支持 `h1/h2/h3` 序号覆盖的最小可用版本
+3. 导入文章后一键应用模板并回显到预览区
+
 ## 需求记录（待开发）
 
 ### 浏览器插件：一键提取公众号文章样式结构
