@@ -18,6 +18,7 @@ describe("styleCompiler", () => {
   });
 
   it("generates heading style for h2 and h3", () => {
+    expect(headingStyle(1, defaultStyleConfig)).toContain("font-size:30px");
     expect(headingStyle(2, defaultStyleConfig)).toContain("font-size:24px");
     expect(headingStyle(3, defaultStyleConfig)).toContain("font-size:20px");
   });

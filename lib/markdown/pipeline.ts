@@ -18,6 +18,8 @@ import {
   listStyle,
   paragraphStyle,
 } from "@/lib/style/styleCompiler";
+import { getRefinedConfigByType } from "@/lib/style/refineByType";
+import type { RefineByTypePatch } from "@/types/template";
 
 export type RenderMode = "standard" | "safe";
 
@@ -29,36 +31,46 @@ function assignStyle(node: Element, style: string): void {
   delete node.properties.class;
 }
 
-function inlineStylePlugin(config: StyleConfig) {
+interface RenderOptions {
+  refineByType?: RefineByTypePatch;
+}
+
+function inlineStylePlugin(config: StyleConfig, options?: RenderOptions) {
   return (tree: Root) => {
     visit(tree, "element", (node: Element) => {
       switch (node.tagName) {
+        case "h1":
+          assignStyle(node, headingStyle(1, getRefinedConfigByType(config, options?.refineByType, "h1")));
+          break;
         case "p":
-          assignStyle(node, paragraphStyle(config));
+          assignStyle(node, paragraphStyle(getRefinedConfigByType(config, options?.refineByType, "p")));
           break;
         case "h2":
-          assignStyle(node, headingStyle(2, config));
+          assignStyle(node, headingStyle(2, getRefinedConfigByType(config, options?.refineByType, "h2")));
           break;
         case "h3":
-          assignStyle(node, headingStyle(3, config));
+          assignStyle(node, headingStyle(3, getRefinedConfigByType(config, options?.refineByType, "h3")));
           break;
         case "blockquote":
-          assignStyle(node, blockquoteStyle(config));
+          assignStyle(node, blockquoteStyle(getRefinedConfigByType(config, options?.refineByType, "blockquote")));
           break;
         case "ul":
-          assignStyle(node, listStyle("ul", config));
+          assignStyle(node, listStyle("ul", getRefinedConfigByType(config, options?.refineByType, "li")));
           break;
         case "ol":
-          assignStyle(node, listStyle("ol", config));
+          assignStyle(node, listStyle("ol", getRefinedConfigByType(config, options?.refineByType, "li")));
           break;
         case "li":
+          {
+            const refinedConfig = getRefinedConfigByType(config, options?.refineByType, "li");
           assignStyle(
             node,
-            `display:list-item; margin:8px 0; line-height:${Math.max(config.lineHeight, 1.8)}; color:${config.textColor}; font-family:${config.bodyFontFamily};`,
+            `display:list-item; margin:8px 0; line-height:${Math.max(refinedConfig.lineHeight, 1.8)}; color:${refinedConfig.textColor}; font-family:${refinedConfig.bodyFontFamily};`,
           );
           break;
+          }
         case "img":
-          assignStyle(node, imageStyle(config));
+          assignStyle(node, imageStyle(getRefinedConfigByType(config, options?.refineByType, "img")));
           break;
         case "pre":
           assignStyle(node, codeStyle(config));
@@ -73,7 +85,7 @@ function inlineStylePlugin(config: StyleConfig) {
           assignStyle(node, `color:${config.primaryColor}; text-decoration:underline; word-break:break-all;`);
           break;
         case "hr":
-          assignStyle(node, hrStyle(config));
+          assignStyle(node, hrStyle(getRefinedConfigByType(config, options?.refineByType, "hr")));
           break;
         default:
           break;
@@ -88,12 +100,17 @@ function safeModePlugin() {
   };
 }
 
-export function renderMarkdown(md: string, config: StyleConfig, mode: RenderMode = "standard"): string {
+export function renderMarkdown(
+  md: string,
+  config: StyleConfig,
+  mode: RenderMode = "standard",
+  options?: RenderOptions,
+): string {
   let processor = unified()
     .use(remarkParse)
     .use(remarkGfm)
     .use(remarkRehype)
-    .use(inlineStylePlugin, config);
+    .use(inlineStylePlugin, config, options);
 
   if (mode === "safe") {
     processor = processor.use(safeModePlugin);

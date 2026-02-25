@@ -9,6 +9,14 @@ export const defaultStyleConfig: StyleConfig = {
     "PingFang SC, system-ui, -apple-system, BlinkMacSystemFont, Helvetica Neue, Hiragino Sans GB, Microsoft YaHei UI, Microsoft YaHei, Arial, sans-serif",
   bodyTextAlign: "start",
   bodyWordBreak: "break-all",
+  h1Size: 30,
+  h1Weight: 800,
+  h1LineHeight: 1.28,
+  h1MarginTop: 8,
+  h1MarginBottom: 24,
+  h1PaddingLeft: 0,
+  h1BorderLeftWidth: 0,
+  h1BorderLeftColor: "#002fa7",
   h2Size: 24,
   h3Size: 20,
   headingWeight: 700,
@@ -65,7 +73,8 @@ export const answer = 42;
 `;
 
 const numericRules: Record<keyof Pick<StyleConfig,
-  "bodyFontSize" | "lineHeight" | "paragraphMarginTop" | "paragraphSpacing" | "h2Size" | "h3Size" |
+  "bodyFontSize" | "lineHeight" | "paragraphMarginTop" | "paragraphSpacing" | "h1Size" | "h1Weight" |
+  "h1LineHeight" | "h1MarginTop" | "h1MarginBottom" | "h1PaddingLeft" | "h1BorderLeftWidth" | "h2Size" | "h3Size" |
   "headingWeight" | "headingLineHeight" | "headingMarginTop" | "headingMarginBottom" | "headingPaddingLeft" |
   "headingBorderLeftWidth" | "h3MarginTop" | "h3MarginBottom" | "h3PaddingVertical" | "h3PaddingHorizontal" |
   "h3BorderLeftWidth" | "h3BorderRadius" | "blockRadius" | "blockPadding" | "quoteFontSize" | "quoteLineHeight" |
@@ -76,6 +85,13 @@ const numericRules: Record<keyof Pick<StyleConfig,
   lineHeight: { min: 1.2, max: 2.2 },
   paragraphMarginTop: { min: 0, max: 30 },
   paragraphSpacing: { min: 4, max: 40 },
+  h1Size: { min: 22, max: 54 },
+  h1Weight: { min: 500, max: 900 },
+  h1LineHeight: { min: 1.1, max: 2.2 },
+  h1MarginTop: { min: 0, max: 80 },
+  h1MarginBottom: { min: 0, max: 60 },
+  h1PaddingLeft: { min: 0, max: 40 },
+  h1BorderLeftWidth: { min: 0, max: 12 },
   h2Size: { min: 18, max: 40 },
   h3Size: { min: 16, max: 32 },
   headingWeight: { min: 400, max: 900 },
@@ -99,8 +115,8 @@ const numericRules: Record<keyof Pick<StyleConfig,
 };
 
 const colorFields: Array<keyof Pick<StyleConfig,
-  "primaryColor" | "secondaryColor" | "textColor" | "listMarkerColor" | "quoteBgColor" | "quoteBorderColor" | "headingBorderLeftColor"
->> = ["primaryColor", "secondaryColor", "textColor", "listMarkerColor", "quoteBgColor", "quoteBorderColor", "headingBorderLeftColor"];
+  "primaryColor" | "secondaryColor" | "textColor" | "listMarkerColor" | "quoteBgColor" | "quoteBorderColor" | "headingBorderLeftColor" | "h1BorderLeftColor"
+>> = ["primaryColor", "secondaryColor", "textColor", "listMarkerColor", "quoteBgColor", "quoteBorderColor", "headingBorderLeftColor", "h1BorderLeftColor"];
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));

@@ -266,6 +266,16 @@ export function inferStyleConfigFromHtml(
   const paragraphSpacing =
     toNumber(pickProperty("p", "margin-bottom")) ?? parseMarginBottom(pickProperty("p", "margin"));
   const h2Size = toNumber(pickProperty("h2", "font-size"));
+  const h1Size = toNumber(pickProperty("h1", "font-size"));
+  const h1Weight = toNumber(pickProperty("h1", "font-weight"));
+  const h1LineHeight = toNumber(pickProperty("h1", "line-height"));
+  const h1MarginTop = toNumber(pickProperty("h1", "margin-top")) ?? parseMarginTop(pickProperty("h1", "margin"));
+  const h1MarginBottom =
+    toNumber(pickProperty("h1", "margin-bottom")) ?? parseMarginBottom(pickProperty("h1", "margin"));
+  const h1PaddingLeft = toNumber(pickProperty("h1", "padding-left"));
+  const h1BorderLeftWidth =
+    toNumber(pickProperty("h1", "border-left-width")) ?? parseBorderLeftWidth(pickProperty("h1", "border-left"));
+  const h1BorderLeftColor = pickProperty("h1", "border-left-color") ?? parseBorderLeftColor(pickProperty("h1", "border-left"));
   const h3Size = toNumber(pickProperty("h3", "font-size"));
   const headingWeight = toNumber(pickProperty("h2,h3", "font-weight"));
   const textColor = pickProperty("p,li,blockquote", "color");
@@ -334,6 +344,14 @@ export function inferStyleConfigFromHtml(
       bodyWordBreak === "normal" || bodyWordBreak === "break-all" || bodyWordBreak === "break-word"
         ? bodyWordBreak
         : fallback.bodyWordBreak,
+    h1Size: h1Size ?? fallback.h1Size,
+    h1Weight: h1Weight ?? fallback.h1Weight,
+    h1LineHeight: h1LineHeight ?? fallback.h1LineHeight,
+    h1MarginTop: h1MarginTop ?? fallback.h1MarginTop,
+    h1MarginBottom: h1MarginBottom ?? fallback.h1MarginBottom,
+    h1PaddingLeft: h1PaddingLeft ?? fallback.h1PaddingLeft,
+    h1BorderLeftWidth: h1BorderLeftWidth ?? fallback.h1BorderLeftWidth,
+    h1BorderLeftColor: h1BorderLeftColor ?? fallback.h1BorderLeftColor,
     h2Size: h2Size ?? fallback.h2Size,
     h3Size: h3Size ?? fallback.h3Size,
     headingWeight: headingWeight ?? fallback.headingWeight,

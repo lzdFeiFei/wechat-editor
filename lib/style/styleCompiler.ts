@@ -17,7 +17,22 @@ export function paragraphStyle(c: StyleConfig): string {
   ]);
 }
 
-export function headingStyle(level: 2 | 3, c: StyleConfig): string {
+export function headingStyle(level: 1 | 2 | 3, c: StyleConfig): string {
+  if (level === 1) {
+    return compactStyle([
+      `font-size:${c.h1Size}px;`,
+      `line-height:${c.h1LineHeight}em;`,
+      `font-weight:${c.h1Weight};`,
+      `margin-top:${c.h1MarginTop}px;`,
+      `margin-bottom:${c.h1MarginBottom}px;`,
+      `padding-left:${c.h1PaddingLeft}px;`,
+      `border-left:${c.h1BorderLeftWidth}px solid ${c.h1BorderLeftColor};`,
+      `color:${c.primaryColor};`,
+      `font-family:${c.bodyFontFamily};`,
+      `word-break:${c.bodyWordBreak};`,
+    ]);
+  }
+
   const size = level === 2 ? c.h2Size : c.h3Size;
   if (level === 3) {
     return compactStyle([

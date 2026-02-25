@@ -12,33 +12,52 @@
 - CodeMirror 6
 - Vitest
 
-## 当前已实现功能
+## 当前已实现功能（V1）
 
-### 1. 三栏编辑工作台
+### 1. 多页面信息架构
+
+- `/` 首页介绍 + 功能入口
+- `/templates` 模板管理页（模板 CRUD + HTML 分析导入 + 三栏调参）
+- `/compose` 文章排版页（选模板应用 + 精修 + 导出）
+
+### 2. 三栏编辑工作台
 
 - 左侧：Markdown 编辑器（CodeMirror）
-- 中间：StyleConfig 可视化调参面板
+- 中间：样式配置面板（按全局/H1/H2-H3/引用列表/图片分组折叠）
 - 右侧：公众号样式预览（移动端宽度模拟）
 
-### 2. 渲染与导出
+### 3. 渲染与导出
 
 - Markdown 实时渲染为 inline HTML
 - 支持 `standard/safe` 两种渲染模式
 - `Export HTML`：复制 HTML 源码
 - `Copy Rich Content for WeChat`：复制富文本，便于直接粘贴到公众号后台
-- 导出 `styleConfig.json`
+- 导出模板 JSON
 
-### 3. 公众号兼容策略
+### 4. 模板能力
+
+- 模板创建、编辑、复制、删除
+- 模板本地持久化（localStorage）
+- 模板 JSON 导入导出
+- 支持从粘贴 HTML 反推样式并写入模板
+
+### 5. 精修模式（按元素类型）
+
+- 支持 `h1/h2/h3/p/li/blockquote/img/hr` 类型级精修
+- 模板应用策略为“全量覆盖 + 一次撤销”
+
+### 6. 公众号兼容策略
 
 - 统一通过 inline style 输出
 - 白名单 sanitize 过滤
 - safe 模式降级高风险/复杂结构（如表格）
 
-### 4. 样式系统（StyleConfig）
+### 7. 样式系统（StyleConfig）
 
 当前可配置字段覆盖：
 
 - 正文：字号、行高、段前/段后、字体、对齐、换行策略
+- H1：字号、字重、行高、间距、左边框
 - 标题：h2/h3 字号、粗细、间距、边框、h3 背景块等
 - 引用：背景、边框、圆角、字号、行高
 - 图片：边框、阴影、间距、最大高度
@@ -46,14 +65,14 @@
 - 列表：marker 颜色（已修复 marker 不显示问题）
 - 强调文本：`strong` 使用强调色（primaryColor）
 
-### 5. HTML 导入与样式反推
+### 8. HTML 导入与样式反推
 
 - 粘贴公众号 HTML 后可分析格式统计
 - 自动归一化编辑器包装结构（移除 ProseMirror/leaf 等噪声节点）
 - 支持 HTML -> Markdown 转换并回填左侧编辑区
 - 支持从导入 HTML 反推出 StyleConfig 并回填中间面板
 
-### 6. 编辑体验增强
+### 9. 编辑体验增强
 
 - 左右内容宽度对齐（编辑器内容宽度近似右侧展示宽度）
 - 左右滚动比例联动（可开关），提升阅读定位一致性
@@ -91,6 +110,10 @@ pnpm build
 ```
 
 > 说明：项目 `engines` 约束为 Node 22，若本机是其他版本会出现 warning，但不影响开发调试。
+
+## 文档
+
+- V1 需求规格：[docs/PRD-v1-template-compose.md](docs/PRD-v1-template-compose.md)
 
 ## 后续可能开发功能（Roadmap）
 

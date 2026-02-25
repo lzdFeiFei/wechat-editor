@@ -5,6 +5,7 @@ import { visit } from "unist-util-visit";
 
 const allowedTagNames = [
   "p",
+  "h1",
   "h2",
   "h3",
   "strong",
@@ -33,6 +34,7 @@ export const sanitizeSchema: Schema = {
     code: ["style"],
     pre: ["style"],
     p: ["style"],
+    h1: ["style"],
     h2: ["style"],
     h3: ["style"],
     ul: ["style"],

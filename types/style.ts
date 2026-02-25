@@ -6,6 +6,14 @@ export interface StyleConfig {
   bodyFontFamily: string;
   bodyTextAlign: "left" | "center" | "right" | "justify" | "start";
   bodyWordBreak: "normal" | "break-all" | "break-word";
+  h1Size: number;
+  h1Weight: number;
+  h1LineHeight: number;
+  h1MarginTop: number;
+  h1MarginBottom: number;
+  h1PaddingLeft: number;
+  h1BorderLeftWidth: number;
+  h1BorderLeftColor: string;
   h2Size: number;
   h3Size: number;
   headingWeight: number;

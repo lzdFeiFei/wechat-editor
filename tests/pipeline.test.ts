@@ -5,9 +5,10 @@ import { defaultStyleConfig } from "@/lib/style/styleConfig";
 
 describe("renderMarkdown", () => {
   it("injects inline style and strips class attributes", () => {
-    const markdown = "## Title\n\nParagraph with [link](https://example.com).";
+    const markdown = "# H1\n\n## Title\n\nParagraph with [link](https://example.com).";
     const html = renderMarkdown(markdown, defaultStyleConfig, "standard");
 
+    expect(html).toContain("<h1 style=");
     expect(html).toContain("<h2 style=");
     expect(html).toContain("<p style=");
     expect(html).toContain("<a href=\"https://example.com\" style=");
@@ -24,5 +25,20 @@ describe("renderMarkdown", () => {
     const markdown = "这是 **注意力才是最稀缺的资源**。";
     const html = renderMarkdown(markdown, defaultStyleConfig, "standard");
     expect(html).toContain(`<strong style="color:${defaultStyleConfig.primaryColor}; font-weight:600;">`);
+  });
+
+  it("applies refine patches by element type", () => {
+    const markdown = "## Title\n\nParagraph";
+    const html = renderMarkdown(markdown, defaultStyleConfig, "standard", {
+      refineByType: {
+        h2: { primaryColor: "#ff0000", h2Size: 32 },
+        p: { textColor: "#008800", bodyFontSize: 18 },
+      },
+    });
+
+    expect(html).toContain("font-size:32px");
+    expect(html).toContain("color:#ff0000");
+    expect(html).toContain("font-size:18px");
+    expect(html).toContain("color:#008800");
   });
 });
