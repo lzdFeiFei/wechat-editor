@@ -1,7 +1,23 @@
-import { defaultStyleConfig, validateStyleConfig } from "@/lib/style/styleConfig";
+import { defaultStyleConfig, sampleMarkdown, validateStyleConfig } from "@/lib/style/styleConfig";
 import type { StyleTemplate } from "@/types/template";
 
 const STORAGE_KEY = "wechat-style-templates:v1";
+
+export interface TemplateImportIssue {
+  field: string;
+  message: string;
+}
+
+type TemplateImportFailure = {
+  ok: false;
+  message: string;
+  issues: TemplateImportIssue[];
+};
+
+type TemplateImportSuccess = {
+  ok: true;
+  template: StyleTemplate;
+};
 
 export function generateTemplateId(): string {
   return `tpl_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`;
@@ -13,6 +29,7 @@ export function normalizeTemplate(template: StyleTemplate): StyleTemplate {
     globalStyleConfig: validateStyleConfig(template.globalStyleConfig),
     description: template.description?.trim() || "",
     tags: Array.isArray(template.tags) ? template.tags.map((item) => item.trim()).filter(Boolean) : [],
+    previewMarkdown: String(template.previewMarkdown || sampleMarkdown),
     sourceType: template.sourceType === "html_import" ? "html_import" : "manual",
     version: Number.isFinite(template.version) ? template.version : 1,
   };
@@ -24,6 +41,7 @@ export function createTemplate(input: {
   globalStyleConfig?: Partial<StyleTemplate["globalStyleConfig"]>;
   description?: string;
   tags?: string[];
+  previewMarkdown?: string;
 }): StyleTemplate {
   const now = new Date().toISOString();
   return normalizeTemplate({
@@ -33,6 +51,7 @@ export function createTemplate(input: {
     tags: input.tags ?? [],
     sourceType: input.sourceType,
     globalStyleConfig: validateStyleConfig({ ...defaultStyleConfig, ...input.globalStyleConfig }),
+    previewMarkdown: String(input.previewMarkdown || sampleMarkdown),
     createdAt: now,
     updatedAt: now,
     version: 1,
@@ -75,31 +94,81 @@ export function duplicateTemplate(template: StyleTemplate): StyleTemplate {
     description: template.description,
     tags: template.tags,
     globalStyleConfig: template.globalStyleConfig,
+    previewMarkdown: template.previewMarkdown,
   });
 }
 
-export function parseTemplateImport(jsonText: string): { ok: true; template: StyleTemplate } | { ok: false; message: string } {
+export function parseTemplateImport(
+  jsonText: string,
+): TemplateImportSuccess | TemplateImportFailure {
   try {
-    const parsed = JSON.parse(jsonText);
+    const parsed = JSON.parse(jsonText) as Record<string, unknown>;
     if (!parsed || typeof parsed !== "object") {
-      return { ok: false, message: "JSON 格式无效：缺少模板对象。" };
+      return {
+        ok: false,
+        message: "JSON 格式无效：缺少模板对象。",
+        issues: [{ field: "root", message: "导入内容必须是对象类型" }],
+      };
     }
-    if (typeof parsed.name !== "string") {
-      return { ok: false, message: "模板导入失败：name 必须是字符串。" };
+
+    const issues: TemplateImportIssue[] = [];
+    if (typeof parsed.name !== "string" || !parsed.name.trim()) {
+      issues.push({ field: "name", message: "name 必须是非空字符串" });
     }
     if (!parsed.globalStyleConfig || typeof parsed.globalStyleConfig !== "object") {
-      return { ok: false, message: "模板导入失败：缺少 globalStyleConfig。" };
+      issues.push({
+        field: "globalStyleConfig",
+        message: "globalStyleConfig 必须是对象",
+      });
     }
+    if (
+      parsed.previewMarkdown !== undefined &&
+      typeof parsed.previewMarkdown !== "string"
+    ) {
+      issues.push({
+        field: "previewMarkdown",
+        message: "previewMarkdown 必须是字符串",
+      });
+    }
+    if (
+      parsed.description !== undefined &&
+      typeof parsed.description !== "string"
+    ) {
+      issues.push({ field: "description", message: "description 必须是字符串" });
+    }
+    if (
+      parsed.tags !== undefined &&
+      !Array.isArray(parsed.tags)
+    ) {
+      issues.push({ field: "tags", message: "tags 必须是字符串数组" });
+    }
+    if (Array.isArray(parsed.tags) && parsed.tags.some((tag) => typeof tag !== "string")) {
+      issues.push({ field: "tags", message: "tags 内每一项都必须是字符串" });
+    }
+
+    if (issues.length > 0) {
+      return {
+        ok: false,
+        message: "模板导入失败：JSON 字段不合法。",
+        issues,
+      };
+    }
+
     const template = createTemplate({
-      name: parsed.name,
-      description: typeof parsed.description === "string" ? parsed.description : "",
-      tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+      name: parsed.name as string,
+      description: (parsed.description as string | undefined) ?? "",
+      tags: (parsed.tags as string[] | undefined) ?? [],
       sourceType: parsed.sourceType === "html_import" ? "html_import" : "manual",
-      globalStyleConfig: parsed.globalStyleConfig,
+      globalStyleConfig: parsed.globalStyleConfig as Partial<StyleTemplate["globalStyleConfig"]>,
+      previewMarkdown: typeof parsed.previewMarkdown === "string" ? parsed.previewMarkdown : sampleMarkdown,
     });
     return { ok: true, template };
   } catch {
-    return { ok: false, message: "模板导入失败：JSON 解析错误。" };
+    return {
+      ok: false,
+      message: "模板导入失败：JSON 解析错误。",
+      issues: [{ field: "json", message: "请检查逗号、引号和括号是否完整" }],
+    };
   }
 }
 

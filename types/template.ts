@@ -10,6 +10,7 @@ export interface StyleTemplate {
   tags?: string[];
   sourceType: TemplateSourceType;
   globalStyleConfig: StyleConfig;
+  previewMarkdown: string;
   createdAt: string;
   updatedAt: string;
   version: number;
