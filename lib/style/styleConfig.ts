@@ -33,8 +33,13 @@ export const defaultStyleConfig: StyleConfig = {
   h3BorderLeftWidth: 3,
   h3BorderRadius: 6,
   h3BackgroundColor: "rgba(0, 47, 167, 0.1)",
+  h1Color: "#1f2937",
+  h2Color: "#1f2937",
+  h3Color: "#1f2937",
   primaryColor: "#1f2937",
   secondaryColor: "#4b5563",
+  pTextColor: "#111827",
+  liTextColor: "#111827",
   textColor: "#111827",
   listMarkerColor: "#002fa7",
   blockRadius: 8,
@@ -115,8 +120,8 @@ const numericRules: Record<keyof Pick<StyleConfig,
 };
 
 const colorFields: Array<keyof Pick<StyleConfig,
-  "primaryColor" | "secondaryColor" | "textColor" | "listMarkerColor" | "quoteBgColor" | "quoteBorderColor" | "headingBorderLeftColor" | "h1BorderLeftColor"
->> = ["primaryColor", "secondaryColor", "textColor", "listMarkerColor", "quoteBgColor", "quoteBorderColor", "headingBorderLeftColor", "h1BorderLeftColor"];
+  "h1Color" | "h2Color" | "h3Color" | "primaryColor" | "secondaryColor" | "pTextColor" | "liTextColor" | "textColor" | "listMarkerColor" | "quoteBgColor" | "quoteBorderColor" | "headingBorderLeftColor" | "h1BorderLeftColor"
+>> = ["h1Color", "h2Color", "h3Color", "primaryColor", "secondaryColor", "pTextColor", "liTextColor", "textColor", "listMarkerColor", "quoteBgColor", "quoteBorderColor", "headingBorderLeftColor", "h1BorderLeftColor"];
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -131,6 +136,7 @@ function normalizeColor(value: string, fallback: string): string {
 }
 
 export function validateStyleConfig(config: Partial<StyleConfig>): StyleConfig {
+  const raw = config as Partial<StyleConfig>;
   const merged = { ...defaultStyleConfig, ...config } as StyleConfig;
 
   for (const [key, rule] of Object.entries(numericRules) as Array<[keyof typeof numericRules, { min: number; max: number }]>) {
@@ -139,6 +145,23 @@ export function validateStyleConfig(config: Partial<StyleConfig>): StyleConfig {
 
   for (const key of colorFields) {
     merged[key] = normalizeColor(String(merged[key]), defaultStyleConfig[key]);
+  }
+
+  // Backward compatibility: migrate legacy shared fields when dedicated fields are missing.
+  if (raw.h1Color === undefined && typeof raw.primaryColor === "string") {
+    merged.h1Color = normalizeColor(raw.primaryColor, defaultStyleConfig.h1Color);
+  }
+  if (raw.h2Color === undefined && typeof raw.primaryColor === "string") {
+    merged.h2Color = normalizeColor(raw.primaryColor, defaultStyleConfig.h2Color);
+  }
+  if (raw.h3Color === undefined && typeof raw.primaryColor === "string") {
+    merged.h3Color = normalizeColor(raw.primaryColor, defaultStyleConfig.h3Color);
+  }
+  if (raw.pTextColor === undefined && typeof raw.textColor === "string") {
+    merged.pTextColor = normalizeColor(raw.textColor, defaultStyleConfig.pTextColor);
+  }
+  if (raw.liTextColor === undefined && typeof raw.textColor === "string") {
+    merged.liTextColor = normalizeColor(raw.textColor, defaultStyleConfig.liTextColor);
   }
 
   const alignValues = new Set<StyleConfig["bodyTextAlign"]>(["left", "center", "right", "justify", "start"]);

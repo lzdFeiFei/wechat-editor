@@ -9,7 +9,7 @@ export function paragraphStyle(c: StyleConfig): string {
     `font-size:${c.bodyFontSize}px;`,
     `line-height:${c.lineHeight};`,
     `margin:${c.paragraphMarginTop}px 0 ${c.paragraphSpacing}px 0;`,
-    `color:${c.textColor};`,
+    `color:${c.pTextColor};`,
     `font-family:${c.bodyFontFamily};`,
     `text-align:${c.bodyTextAlign};`,
     `word-break:${c.bodyWordBreak};`,
@@ -27,7 +27,7 @@ export function headingStyle(level: 1 | 2 | 3, c: StyleConfig): string {
       `margin-bottom:${c.h1MarginBottom}px;`,
       `padding-left:${c.h1PaddingLeft}px;`,
       `border-left:${c.h1BorderLeftWidth}px solid ${c.h1BorderLeftColor};`,
-      `color:${c.primaryColor};`,
+      `color:${c.h1Color};`,
       `font-family:${c.bodyFontFamily};`,
       `word-break:${c.bodyWordBreak};`,
     ]);
@@ -45,7 +45,7 @@ export function headingStyle(level: 1 | 2 | 3, c: StyleConfig): string {
       `background-color:${c.h3BackgroundColor};`,
       `border-radius:${c.h3BorderRadius}px;`,
       `border-left:${c.h3BorderLeftWidth}px solid ${c.headingBorderLeftColor};`,
-      `color:${c.primaryColor};`,
+      `color:${c.h3Color};`,
       `font-family:${c.bodyFontFamily};`,
       `word-break:${c.bodyWordBreak};`,
     ]);
@@ -59,7 +59,7 @@ export function headingStyle(level: 1 | 2 | 3, c: StyleConfig): string {
     `margin-bottom:${c.headingMarginBottom}px;`,
     `padding-left:${c.headingPaddingLeft}px;`,
     `border-left:${c.headingBorderLeftWidth}px solid ${c.headingBorderLeftColor};`,
-    `color:${c.primaryColor};`,
+    `color:${c.h2Color};`,
     `font-family:${c.bodyFontFamily};`,
     `word-break:${c.bodyWordBreak};`,
   ]);

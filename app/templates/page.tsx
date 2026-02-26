@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+import { deriveRefineByTypeFromTemplate } from "@/lib/style-library/mapping";
+import { readStyleLibraryFromStorage } from "@/lib/style-library/store";
 import { renderMarkdown, type RenderMode } from "@/lib/markdown/pipeline";
 import { defaultStyleConfig } from "@/lib/style/styleConfig";
 import {
@@ -14,6 +16,7 @@ import {
   persistTemplates,
   readTemplatesFromStorage,
 } from "@/lib/template/templateStore";
+import type { ElementStylePreset } from "@/types/styleLibrary";
 import type { StyleTemplate } from "@/types/template";
 
 export default function TemplatesPage() {
@@ -26,6 +29,12 @@ export default function TemplatesPage() {
   });
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [mode, setMode] = useState<RenderMode>("standard");
+  const [libraryPresets, setLibraryPresets] = useState<ElementStylePreset[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+    return readStyleLibraryFromStorage().presets;
+  });
   const [status, setStatus] = useState("");
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importJson, setImportJson] = useState("");
@@ -33,6 +42,12 @@ export default function TemplatesPage() {
   useEffect(() => {
     persistTemplates(templates);
   }, [templates]);
+
+  useEffect(() => {
+    const refresh = () => setLibraryPresets(readStyleLibraryFromStorage().presets);
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, []);
 
   const previewTemplate = useMemo(
     () => templates.find((item) => item.id === hoveredId) ?? null,
@@ -47,8 +62,11 @@ export default function TemplatesPage() {
       previewTemplate.previewMarkdown,
       previewTemplate.globalStyleConfig,
       mode,
+      {
+        refineByType: deriveRefineByTypeFromTemplate(previewTemplate, libraryPresets),
+      },
     );
-  }, [mode, previewTemplate]);
+  }, [libraryPresets, mode, previewTemplate]);
 
   const importValidation = useMemo(() => {
     if (!importJson.trim()) {

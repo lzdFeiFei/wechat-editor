@@ -31,8 +31,8 @@ describe("renderMarkdown", () => {
     const markdown = "## Title\n\nParagraph";
     const html = renderMarkdown(markdown, defaultStyleConfig, "standard", {
       refineByType: {
-        h2: { primaryColor: "#ff0000", h2Size: 32 },
-        p: { textColor: "#008800", bodyFontSize: 18 },
+        h2: { h2Color: "#ff0000", h2Size: 32 },
+        p: { pTextColor: "#008800", bodyFontSize: 18 },
       },
     });
 

@@ -82,6 +82,7 @@ describe("template store", () => {
     );
     const templates = readTemplatesFromStorage();
     expect(templates[0]?.previewMarkdown).toBe(sampleMarkdown);
+    expect(templates[0]?.elementPresetMapping).toEqual({});
   });
 });
 
@@ -90,11 +91,11 @@ describe("applyTemplate", () => {
     const template = createTemplate({
       name: "Apply target",
       sourceType: "manual",
-      globalStyleConfig: { textColor: "#ff0000" },
+      globalStyleConfig: { pTextColor: "#ff0000" },
     });
-    const current = { ...defaultStyleConfig, textColor: "#111111" };
+    const current = { ...defaultStyleConfig, pTextColor: "#111111" };
     const result = applyTemplate(current, template);
-    expect(result.nextStyleConfig.textColor).toBe("#ff0000");
-    expect(result.undoSnapshot.textColor).toBe("#111111");
+    expect(result.nextStyleConfig.pTextColor).toBe("#ff0000");
+    expect(result.undoSnapshot.pTextColor).toBe("#111111");
   });
 });

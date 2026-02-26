@@ -52,6 +52,11 @@ const numberFields: NumberField[] = [
 ];
 
 const colorFields: Array<{ key: keyof StyleConfig; label: string }> = [
+  { key: "h1Color", label: "H1 Color" },
+  { key: "h2Color", label: "H2 Color" },
+  { key: "h3Color", label: "H3 Color" },
+  { key: "pTextColor", label: "Paragraph Color" },
+  { key: "liTextColor", label: "List Text Color" },
   { key: "primaryColor", label: "Primary Color" },
   { key: "secondaryColor", label: "Secondary Color" },
   { key: "textColor", label: "Text Color" },
@@ -76,11 +81,11 @@ const textFields: Array<{ key: keyof StyleConfig; label: string; placeholder?: s
 const groups: Array<{ name: string; fields: Array<keyof StyleConfig> }> = [
   {
     name: "Global",
-    fields: ["bodyFontSize", "lineHeight", "paragraphMarginTop", "paragraphSpacing", "bodyFontFamily", "bodyTextAlign", "bodyWordBreak", "textColor", "primaryColor", "secondaryColor"],
+    fields: ["bodyFontSize", "lineHeight", "paragraphMarginTop", "paragraphSpacing", "bodyFontFamily", "bodyTextAlign", "bodyWordBreak", "pTextColor", "liTextColor", "primaryColor", "secondaryColor", "textColor"],
   },
   {
     name: "H1",
-    fields: ["h1Size", "h1Weight", "h1LineHeight", "h1MarginTop", "h1MarginBottom", "h1PaddingLeft", "h1BorderLeftWidth", "h1BorderLeftColor", "primaryColor"],
+    fields: ["h1Size", "h1Weight", "h1LineHeight", "h1MarginTop", "h1MarginBottom", "h1PaddingLeft", "h1BorderLeftWidth", "h1BorderLeftColor", "h1Color"],
   },
   {
     name: "H2/H3",
@@ -101,7 +106,8 @@ const groups: Array<{ name: string; fields: Array<keyof StyleConfig> }> = [
       "h3BorderLeftWidth",
       "h3BorderRadius",
       "h3BackgroundColor",
-      "primaryColor",
+      "h2Color",
+      "h3Color",
     ],
   },
   {

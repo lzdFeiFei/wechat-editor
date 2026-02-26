@@ -65,7 +65,7 @@ function inlineStylePlugin(config: StyleConfig, options?: RenderOptions) {
             const refinedConfig = getRefinedConfigByType(config, options?.refineByType, "li");
           assignStyle(
             node,
-            `display:list-item; margin:8px 0; line-height:${Math.max(refinedConfig.lineHeight, 1.8)}; color:${refinedConfig.textColor}; font-family:${refinedConfig.bodyFontFamily};`,
+            `display:list-item; margin:8px 0; line-height:${Math.max(refinedConfig.lineHeight, 1.8)}; color:${refinedConfig.liTextColor}; font-family:${refinedConfig.bodyFontFamily};`,
           );
           break;
           }

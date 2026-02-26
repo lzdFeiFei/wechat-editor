@@ -7,12 +7,14 @@ import { useEffect, useMemo, useState } from "react";
 import { FormatInspector } from "@/components/analysis/FormatInspector";
 import { MarkdownEditor } from "@/components/editor/MarkdownEditor";
 import { PreviewPanel } from "@/components/preview/PreviewPanel";
-import { StylePanel } from "@/components/style/StylePanel";
 import { renderMarkdown, type RenderMode } from "@/lib/markdown/pipeline";
+import { deriveRefineByTypeFromTemplate } from "@/lib/style-library/mapping";
+import { editableFieldsByType } from "@/lib/style/refineByType";
 import { defaultStyleConfig, validateStyleConfig } from "@/lib/style/styleConfig";
+import { readStyleLibraryFromStorage } from "@/lib/style-library/store";
 import { persistTemplates, readTemplatesFromStorage } from "@/lib/template/templateStore";
-import type { StyleConfig } from "@/types/style";
-import type { StyleTemplate } from "@/types/template";
+import type { ElementStylePreset } from "@/types/styleLibrary";
+import type { RefineElementType, StyleTemplate } from "@/types/template";
 
 export default function TemplateDetailPage() {
   const router = useRouter();
@@ -30,6 +32,18 @@ export default function TemplateDetailPage() {
   const [syncScroll, setSyncScroll] = useState(true);
   const [scrollRatio, setScrollRatio] = useState(0);
   const [referenceOpen, setReferenceOpen] = useState(false);
+  const [libraryPresets, setLibraryPresets] = useState<ElementStylePreset[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+    return readStyleLibraryFromStorage().presets;
+  });
+
+  useEffect(() => {
+    const refresh = () => setLibraryPresets(readStyleLibraryFromStorage().presets);
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, []);
 
   useEffect(() => {
     persistTemplates(templates);
@@ -42,10 +56,30 @@ export default function TemplateDetailPage() {
 
   const styleConfig = template?.globalStyleConfig ?? defaultStyleConfig;
   const markdown = template?.previewMarkdown ?? "";
-  const html = useMemo(
-    () => renderMarkdown(markdown, styleConfig, mode),
-    [markdown, mode, styleConfig],
+  const refineByType = useMemo(
+    () => (template ? deriveRefineByTypeFromTemplate(template, libraryPresets) : {}),
+    [libraryPresets, template],
   );
+  const html = useMemo(
+    () => renderMarkdown(markdown, styleConfig, mode, { refineByType }),
+    [markdown, mode, refineByType, styleConfig],
+  );
+  const presetsByType = useMemo(() => {
+    const groups: Record<RefineElementType, ElementStylePreset[]> = {
+      h1: [],
+      h2: [],
+      h3: [],
+      p: [],
+      li: [],
+      blockquote: [],
+      img: [],
+      hr: [],
+    };
+    for (const preset of libraryPresets) {
+      groups[preset.elementType].push(preset);
+    }
+    return groups;
+  }, [libraryPresets]);
 
   function updateCurrentTemplate(patch: Partial<StyleTemplate>, message: string): void {
     if (!template) {
@@ -58,6 +92,7 @@ export default function TemplateDetailPage() {
         patch.globalStyleConfig ?? template.globalStyleConfig,
       ),
       previewMarkdown: patch.previewMarkdown ?? template.previewMarkdown,
+      elementPresetMapping: patch.elementPresetMapping ?? template.elementPresetMapping ?? {},
       updatedAt: new Date().toISOString(),
     };
     const next = templates
@@ -65,6 +100,34 @@ export default function TemplateDetailPage() {
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     setTemplates(next);
     setStatus(message);
+  }
+
+  function applyPresetForType(type: RefineElementType, presetId: string): void {
+    if (!template) {
+      return;
+    }
+    const selectedPreset = presetsByType[type].find((item) => item.id === presetId);
+    if (selectedPreset) {
+      const nextMapping = {
+        ...(template.elementPresetMapping ?? {}),
+        [type]: selectedPreset.id,
+      };
+      updateCurrentTemplate(
+        {
+          elementPresetMapping: nextMapping,
+        },
+        `已应用 ${type} 样式：${selectedPreset.name}`,
+      );
+      return;
+    }
+    const nextMapping = { ...(template.elementPresetMapping ?? {}) };
+    delete nextMapping[type];
+    updateCurrentTemplate(
+      {
+        elementPresetMapping: nextMapping,
+      },
+      `已清空 ${type} 的样式映射`,
+    );
   }
 
   if (!templateId || !template) {
@@ -139,6 +202,12 @@ export default function TemplateDetailPage() {
                 排版参考
               </button>
               <Link
+                href="/style-builder"
+                className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-100"
+              >
+                元素样式配置
+              </Link>
+              <Link
                 href="/templates"
                 className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm text-zinc-700 hover:bg-zinc-100"
               >
@@ -193,16 +262,44 @@ export default function TemplateDetailPage() {
             }}
           />
 
-          <StylePanel
-            title="模板样式配置"
-            value={styleConfig}
-            onChange={(nextConfig: StyleConfig) =>
-              updateCurrentTemplate(
-                { globalStyleConfig: nextConfig },
-                "模板样式已保存",
-              )
-            }
-          />
+          <section className="flex h-full flex-col overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm">
+            <header className="border-b border-zinc-200 px-4 py-3">
+              <h2 className="text-sm font-semibold text-zinc-900">模板样式映射</h2>
+              <p className="mt-1 text-xs text-zinc-600">
+                仅可选择元素样式库已有样式，不再直接编辑原子字段。
+              </p>
+            </header>
+            <div className="space-y-3 overflow-auto p-4">
+              {(Object.keys(editableFieldsByType) as RefineElementType[]).map((type) => {
+                const options = presetsByType[type];
+                const selectedId = template.elementPresetMapping?.[type] ?? "";
+                return (
+                  <label key={type} className="block">
+                    <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-zinc-700">
+                      {type}
+                    </span>
+                    <select
+                      value={selectedId}
+                      onChange={(event) => applyPresetForType(type, event.target.value)}
+                      className="w-full rounded-md border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-zinc-500"
+                    >
+                      <option value="">使用默认</option>
+                      {options.map((preset) => (
+                        <option key={preset.id} value={preset.id}>
+                          {preset.name}
+                        </option>
+                      ))}
+                    </select>
+                    {options.length === 0 ? (
+                      <p className="mt-1 text-xs text-amber-600">
+                        该类型暂无可用样式，请先到“元素样式配置”创建。
+                      </p>
+                    ) : null}
+                  </label>
+                );
+              })}
+            </div>
+          </section>
 
           <PreviewPanel
             html={html}
@@ -241,6 +338,7 @@ export default function TemplateDetailPage() {
                     sourceType: "html_import",
                     previewMarkdown: importedMarkdown,
                     globalStyleConfig: { ...styleConfig, ...inferredConfig },
+                    elementPresetMapping: {},
                   },
                   "已将 HTML 分析结果写入当前模板",
                 );

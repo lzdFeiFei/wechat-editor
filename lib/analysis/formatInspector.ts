@@ -1,6 +1,7 @@
 import TurndownService from "turndown";
 
 import type { StyleConfig } from "@/types/style";
+import type { RefineElementType } from "@/types/template";
 
 export interface StyleUsage {
   declaration: string;
@@ -18,6 +19,22 @@ export interface FormatInspectionReport {
   inlineStyleElements: number;
   classElements: number;
   tagSummaries: TagFormatSummary[];
+}
+
+export interface ExtractedElementPreset {
+  elementType: RefineElementType;
+  configPatch: Partial<StyleConfig>;
+  sourceStats: {
+    matchedNodes: number;
+    sampledDecls: number;
+  };
+}
+
+export interface ExtractElementPresetResult {
+  markdown: string;
+  normalizedHtml: string;
+  presets: ExtractedElementPreset[];
+  warnings: string[];
 }
 
 function normalizeDeclaration(property: string, value: string): string {
@@ -47,6 +64,44 @@ function parseInlineStyleToMap(styleText: string): Map<string, string> {
     map.set(property, value);
   }
   return map;
+}
+
+function parsePaddingVertical(value?: string): number | undefined {
+  if (!value) {
+    return undefined;
+  }
+  const parts = value.trim().split(/\s+/);
+  if (parts.length === 1) {
+    return toNumber(parts[0]);
+  }
+  if (parts.length >= 3) {
+    return toNumber(parts[0]);
+  }
+  return undefined;
+}
+
+function parsePaddingHorizontal(value?: string): number | undefined {
+  if (!value) {
+    return undefined;
+  }
+  const parts = value.trim().split(/\s+/);
+  if (parts.length === 1) {
+    return toNumber(parts[0]);
+  }
+  if (parts.length >= 2) {
+    return toNumber(parts[1]);
+  }
+  return undefined;
+}
+
+function assignIfDefined<K extends keyof StyleConfig>(
+  target: Partial<StyleConfig>,
+  key: K,
+  value: StyleConfig[K] | undefined,
+): void {
+  if (value !== undefined) {
+    target[key] = value;
+  }
 }
 
 function selectMostFrequent(values: string[]): string | undefined {
@@ -129,6 +184,248 @@ function parseBorderLeftWidth(value?: string): number | undefined {
   }
   const parsed = Number(match[1]);
   return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function collectStyleMaps(
+  document: Document,
+  selector: string,
+): { maps: Map<string, string>[]; matchedNodes: number; sampledDecls: number } {
+  const nodes = Array.from(document.body.querySelectorAll(selector));
+  const maps = nodes
+    .map((node) => node.getAttribute("style") ?? "")
+    .filter(Boolean)
+    .map((styleText) => parseInlineStyleToMap(styleText));
+
+  return {
+    maps,
+    matchedNodes: nodes.length,
+    sampledDecls: maps.reduce((sum, map) => sum + map.size, 0),
+  };
+}
+
+function pickMostFrequentFromMaps(maps: Map<string, string>[], property: string): string | undefined {
+  const values = maps.map((map) => map.get(property)).filter((value): value is string => Boolean(value));
+  return selectMostFrequent(values);
+}
+
+function createElementPatch(
+  elementType: RefineElementType,
+  document: Document,
+): { configPatch: Partial<StyleConfig>; sourceStats: { matchedNodes: number; sampledDecls: number } } {
+  const tagMaps = collectStyleMaps(document, elementType);
+  const bySelector = (selector: string, property: string): string | undefined =>
+    pickMostFrequentFromMaps(collectStyleMaps(document, selector).maps, property);
+
+  const patch: Partial<StyleConfig> = {};
+
+  if (elementType === "h1") {
+    assignIfDefined(patch, "h1Size", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "font-size")));
+    assignIfDefined(patch, "h1Weight", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "font-weight")));
+    assignIfDefined(patch, "h1LineHeight", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "line-height")));
+    assignIfDefined(
+      patch,
+      "h1MarginTop",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "margin-top")) ??
+        parseMarginTop(pickMostFrequentFromMaps(tagMaps.maps, "margin")),
+    );
+    assignIfDefined(
+      patch,
+      "h1MarginBottom",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "margin-bottom")) ??
+        parseMarginBottom(pickMostFrequentFromMaps(tagMaps.maps, "margin")),
+    );
+    assignIfDefined(patch, "h1PaddingLeft", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "padding-left")));
+    assignIfDefined(
+      patch,
+      "h1BorderLeftWidth",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "border-left-width")) ??
+        parseBorderLeftWidth(pickMostFrequentFromMaps(tagMaps.maps, "border-left")),
+    );
+    assignIfDefined(
+      patch,
+      "h1BorderLeftColor",
+      pickMostFrequentFromMaps(tagMaps.maps, "border-left-color") ??
+        parseBorderLeftColor(pickMostFrequentFromMaps(tagMaps.maps, "border-left")),
+    );
+    assignIfDefined(patch, "h1Color", pickMostFrequentFromMaps(tagMaps.maps, "color"));
+  }
+
+  if (elementType === "h2") {
+    assignIfDefined(patch, "h2Size", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "font-size")));
+    assignIfDefined(patch, "headingWeight", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "font-weight")));
+    assignIfDefined(patch, "headingLineHeight", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "line-height")));
+    assignIfDefined(
+      patch,
+      "headingMarginTop",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "margin-top")) ??
+        parseMarginTop(pickMostFrequentFromMaps(tagMaps.maps, "margin")),
+    );
+    assignIfDefined(
+      patch,
+      "headingMarginBottom",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "margin-bottom")) ??
+        parseMarginBottom(pickMostFrequentFromMaps(tagMaps.maps, "margin")),
+    );
+    assignIfDefined(patch, "headingPaddingLeft", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "padding-left")));
+    assignIfDefined(
+      patch,
+      "headingBorderLeftWidth",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "border-left-width")) ??
+        parseBorderLeftWidth(pickMostFrequentFromMaps(tagMaps.maps, "border-left")),
+    );
+    assignIfDefined(
+      patch,
+      "headingBorderLeftColor",
+      pickMostFrequentFromMaps(tagMaps.maps, "border-left-color") ??
+        parseBorderLeftColor(pickMostFrequentFromMaps(tagMaps.maps, "border-left")),
+    );
+    assignIfDefined(
+      patch,
+      "h2Color",
+      pickMostFrequentFromMaps(tagMaps.maps, "color") ??
+        pickMostFrequentFromMaps(tagMaps.maps, "border-left-color") ??
+        parseBorderLeftColor(pickMostFrequentFromMaps(tagMaps.maps, "border-left")),
+    );
+  }
+
+  if (elementType === "h3") {
+    assignIfDefined(patch, "h3Size", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "font-size")));
+    assignIfDefined(patch, "headingWeight", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "font-weight")));
+    assignIfDefined(patch, "headingLineHeight", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "line-height")));
+    assignIfDefined(
+      patch,
+      "h3MarginTop",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "margin-top")) ??
+        parseMarginTop(pickMostFrequentFromMaps(tagMaps.maps, "margin")),
+    );
+    assignIfDefined(
+      patch,
+      "h3MarginBottom",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "margin-bottom")) ??
+        parseMarginBottom(pickMostFrequentFromMaps(tagMaps.maps, "margin")),
+    );
+    assignIfDefined(
+      patch,
+      "h3PaddingVertical",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "padding-top")) ??
+        parsePaddingVertical(pickMostFrequentFromMaps(tagMaps.maps, "padding")),
+    );
+    assignIfDefined(
+      patch,
+      "h3PaddingHorizontal",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "padding-left")) ??
+        parsePaddingHorizontal(pickMostFrequentFromMaps(tagMaps.maps, "padding")),
+    );
+    assignIfDefined(
+      patch,
+      "h3BorderLeftWidth",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "border-left-width")) ??
+        parseBorderLeftWidth(pickMostFrequentFromMaps(tagMaps.maps, "border-left")),
+    );
+    assignIfDefined(patch, "h3BorderRadius", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "border-radius")));
+    assignIfDefined(
+      patch,
+      "h3BackgroundColor",
+      pickMostFrequentFromMaps(tagMaps.maps, "background-color") ?? pickMostFrequentFromMaps(tagMaps.maps, "background"),
+    );
+    assignIfDefined(
+      patch,
+      "h3Color",
+      pickMostFrequentFromMaps(tagMaps.maps, "color") ??
+        pickMostFrequentFromMaps(tagMaps.maps, "border-left-color") ??
+        parseBorderLeftColor(pickMostFrequentFromMaps(tagMaps.maps, "border-left")),
+    );
+  }
+
+  if (elementType === "p") {
+    const textAlign = pickMostFrequentFromMaps(tagMaps.maps, "text-align");
+    const wordBreak = pickMostFrequentFromMaps(tagMaps.maps, "word-break");
+    assignIfDefined(patch, "bodyFontSize", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "font-size")));
+    assignIfDefined(patch, "lineHeight", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "line-height")));
+    assignIfDefined(patch, "paragraphMarginTop", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "margin-top")));
+    assignIfDefined(
+      patch,
+      "paragraphSpacing",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "margin-bottom")) ??
+        parseMarginBottom(pickMostFrequentFromMaps(tagMaps.maps, "margin")),
+    );
+    assignIfDefined(patch, "bodyFontFamily", pickMostFrequentFromMaps(tagMaps.maps, "font-family"));
+    assignIfDefined(
+      patch,
+      "bodyTextAlign",
+      textAlign === "left" ||
+        textAlign === "center" ||
+        textAlign === "right" ||
+        textAlign === "justify" ||
+        textAlign === "start"
+        ? textAlign
+        : undefined,
+    );
+    assignIfDefined(
+      patch,
+      "bodyWordBreak",
+      wordBreak === "normal" || wordBreak === "break-all" || wordBreak === "break-word" ? wordBreak : undefined,
+    );
+    assignIfDefined(patch, "pTextColor", pickMostFrequentFromMaps(tagMaps.maps, "color"));
+  }
+
+  if (elementType === "li") {
+    assignIfDefined(patch, "lineHeight", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "line-height")));
+    assignIfDefined(patch, "bodyFontFamily", pickMostFrequentFromMaps(tagMaps.maps, "font-family"));
+    assignIfDefined(patch, "liTextColor", pickMostFrequentFromMaps(tagMaps.maps, "color"));
+    assignIfDefined(patch, "listMarkerColor", bySelector("ul,ol", "color"));
+    assignIfDefined(
+      patch,
+      "paragraphSpacing",
+      toNumber(pickMostFrequentFromMaps(tagMaps.maps, "margin-bottom")) ??
+        parseMarginBottom(pickMostFrequentFromMaps(tagMaps.maps, "margin")),
+    );
+  }
+
+  if (elementType === "blockquote") {
+    assignIfDefined(patch, "quoteFontSize", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "font-size")));
+    assignIfDefined(patch, "quoteLineHeight", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "line-height")));
+    assignIfDefined(
+      patch,
+      "quoteBgColor",
+      pickMostFrequentFromMaps(tagMaps.maps, "background-color") ?? pickMostFrequentFromMaps(tagMaps.maps, "background"),
+    );
+    assignIfDefined(
+      patch,
+      "quoteBorderColor",
+      pickMostFrequentFromMaps(tagMaps.maps, "border-left-color") ??
+        parseBorderLeftColor(pickMostFrequentFromMaps(tagMaps.maps, "border-left")),
+    );
+    assignIfDefined(patch, "secondaryColor", pickMostFrequentFromMaps(tagMaps.maps, "color"));
+    assignIfDefined(patch, "blockPadding", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "padding")));
+    assignIfDefined(patch, "blockRadius", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "border-radius")));
+  }
+
+  if (elementType === "img") {
+    assignIfDefined(patch, "imageMargin", pickMostFrequentFromMaps(tagMaps.maps, "margin"));
+    assignIfDefined(patch, "imageMaxHeight", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "max-height")));
+    assignIfDefined(patch, "imageBorder", pickMostFrequentFromMaps(tagMaps.maps, "border"));
+    assignIfDefined(patch, "imageBoxShadow", pickMostFrequentFromMaps(tagMaps.maps, "box-shadow"));
+  }
+
+  if (elementType === "hr") {
+    assignIfDefined(patch, "hrMargin", pickMostFrequentFromMaps(tagMaps.maps, "margin"));
+    assignIfDefined(patch, "hrHeight", toNumber(pickMostFrequentFromMaps(tagMaps.maps, "height")));
+    assignIfDefined(
+      patch,
+      "hrBackground",
+      pickMostFrequentFromMaps(tagMaps.maps, "background") ?? pickMostFrequentFromMaps(tagMaps.maps, "background-color"),
+    );
+    assignIfDefined(patch, "hrBorderTop", pickMostFrequentFromMaps(tagMaps.maps, "border-top"));
+  }
+
+  return {
+    configPatch: patch,
+    sourceStats: {
+      matchedNodes: tagMaps.matchedNodes,
+      sampledDecls: tagMaps.sampledDecls,
+    },
+  };
 }
 
 export function inspectHtmlFormat(html: string): FormatInspectionReport {
@@ -278,7 +575,11 @@ export function inferStyleConfigFromHtml(
   const h1BorderLeftColor = pickProperty("h1", "border-left-color") ?? parseBorderLeftColor(pickProperty("h1", "border-left"));
   const h3Size = toNumber(pickProperty("h3", "font-size"));
   const headingWeight = toNumber(pickProperty("h2,h3", "font-weight"));
-  const textColor = pickProperty("p,li,blockquote", "color");
+  const h1Color = pickProperty("h1", "color");
+  const h2Color = pickProperty("h2", "color");
+  const h3Color = pickProperty("h3", "color");
+  const pTextColor = pickProperty("p", "color");
+  const liTextColor = pickProperty("li", "color");
   const primaryColor =
     pickProperty("h2", "color") ??
     pickProperty("h3", "color") ??
@@ -368,9 +669,14 @@ export function inferStyleConfigFromHtml(
     h3BorderLeftWidth: h3BorderLeftWidth ?? fallback.h3BorderLeftWidth,
     h3BorderRadius: h3BorderRadius ?? fallback.h3BorderRadius,
     h3BackgroundColor: h3BackgroundColor ?? fallback.h3BackgroundColor,
+    h1Color: h1Color ?? fallback.h1Color,
+    h2Color: h2Color ?? fallback.h2Color,
+    h3Color: h3Color ?? fallback.h3Color,
     primaryColor: primaryColor ?? fallback.primaryColor,
     secondaryColor: secondaryColor ?? fallback.secondaryColor,
-    textColor: textColor ?? fallback.textColor,
+    pTextColor: pTextColor ?? fallback.pTextColor,
+    liTextColor: liTextColor ?? fallback.liTextColor,
+    textColor: pTextColor ?? liTextColor ?? fallback.textColor,
     listMarkerColor: listMarkerColor ?? fallback.listMarkerColor,
     blockRadius: blockRadius ?? fallback.blockRadius,
     blockPadding: blockPadding ?? fallback.blockPadding,
@@ -386,5 +692,47 @@ export function inferStyleConfigFromHtml(
     hrHeight: hrHeight ?? fallback.hrHeight,
     hrBackground: hrBackground ?? fallback.hrBackground,
     hrBorderTop: hrBorderTop ?? fallback.hrBorderTop,
+  };
+}
+
+export function extractElementPresetsFromHtml(
+  html: string,
+  _fallback: StyleConfig,
+): ExtractElementPresetResult {
+  void _fallback;
+  const normalizedHtml = normalizeImportedHtml(html);
+  const parser = new DOMParser();
+  const document = parser.parseFromString(normalizedHtml, "text/html");
+
+  const markdown = htmlToMarkdown(normalizedHtml);
+  const warnings: string[] = [];
+  const elementTypes: RefineElementType[] = ["h1", "h2", "h3", "p", "li", "blockquote", "img", "hr"];
+  const presets: ExtractedElementPreset[] = [];
+
+  for (const elementType of elementTypes) {
+    const { configPatch, sourceStats } = createElementPatch(elementType, document);
+    if (sourceStats.matchedNodes === 0) {
+      continue;
+    }
+    if (Object.keys(configPatch).length === 0) {
+      warnings.push(`${elementType}: 检测到元素，但未提取到可用样式字段，已跳过导入。`);
+      continue;
+    }
+    presets.push({
+      elementType,
+      configPatch,
+      sourceStats,
+    });
+  }
+
+  if (presets.length === 0) {
+    warnings.push("未提取到可导入的元素样式，请检查 HTML 是否包含 inline style。");
+  }
+
+  return {
+    markdown,
+    normalizedHtml,
+    presets,
+    warnings,
   };
 }

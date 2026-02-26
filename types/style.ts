@@ -30,8 +30,13 @@ export interface StyleConfig {
   h3BorderLeftWidth: number;
   h3BorderRadius: number;
   h3BackgroundColor: string;
+  h1Color: string;
+  h2Color: string;
+  h3Color: string;
   primaryColor: string;
   secondaryColor: string;
+  pTextColor: string;
+  liTextColor: string;
   textColor: string;
   listMarkerColor: string;
   blockRadius: number;

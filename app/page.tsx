@@ -12,6 +12,12 @@ export default function HomePage() {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
+              href="/style-builder"
+              className="rounded-lg bg-blue-700 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600"
+            >
+              元素样式配置
+            </Link>
+            <Link
               href="/templates"
               className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
             >
@@ -39,6 +45,10 @@ export default function HomePage() {
             {
               title: "按类型精修",
               detail: "在文章排版中针对 h1/h2/p/li/blockquote/img/hr 做局部精修，导出前可实时预览。",
+            },
+            {
+              title: "元素样式库",
+              detail: "通过排版参考文档提取 h1/h2/h3/p 等元素样式，沉淀为可复用的组件化样式资产。",
             },
           ].map((item) => (
             <article key={item.title} className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm">

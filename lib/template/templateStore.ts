@@ -24,12 +24,15 @@ export function generateTemplateId(): string {
 }
 
 export function normalizeTemplate(template: StyleTemplate): StyleTemplate {
+  const mapping = template.elementPresetMapping;
   return {
     ...template,
     globalStyleConfig: validateStyleConfig(template.globalStyleConfig),
     description: template.description?.trim() || "",
     tags: Array.isArray(template.tags) ? template.tags.map((item) => item.trim()).filter(Boolean) : [],
     previewMarkdown: String(template.previewMarkdown || sampleMarkdown),
+    elementPresetMapping:
+      mapping && typeof mapping === "object" ? { ...mapping } : {},
     sourceType: template.sourceType === "html_import" ? "html_import" : "manual",
     version: Number.isFinite(template.version) ? template.version : 1,
   };
@@ -42,6 +45,7 @@ export function createTemplate(input: {
   description?: string;
   tags?: string[];
   previewMarkdown?: string;
+  elementPresetMapping?: StyleTemplate["elementPresetMapping"];
 }): StyleTemplate {
   const now = new Date().toISOString();
   return normalizeTemplate({
@@ -52,6 +56,7 @@ export function createTemplate(input: {
     sourceType: input.sourceType,
     globalStyleConfig: validateStyleConfig({ ...defaultStyleConfig, ...input.globalStyleConfig }),
     previewMarkdown: String(input.previewMarkdown || sampleMarkdown),
+    elementPresetMapping: input.elementPresetMapping ?? {},
     createdAt: now,
     updatedAt: now,
     version: 1,
@@ -95,6 +100,7 @@ export function duplicateTemplate(template: StyleTemplate): StyleTemplate {
     tags: template.tags,
     globalStyleConfig: template.globalStyleConfig,
     previewMarkdown: template.previewMarkdown,
+    elementPresetMapping: template.elementPresetMapping,
   });
 }
 

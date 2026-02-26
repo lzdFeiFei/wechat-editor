@@ -1,18 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { MarkdownEditor } from "@/components/editor/MarkdownEditor";
 import { PreviewPanel } from "@/components/preview/PreviewPanel";
-import { RefinePanel } from "@/components/style/RefinePanel";
-import { StylePanel } from "@/components/style/StylePanel";
 import { renderMarkdown, type RenderMode } from "@/lib/markdown/pipeline";
-import { defaultStyleConfig, sampleMarkdown, validateStyleConfig } from "@/lib/style/styleConfig";
-import { applyTemplate } from "@/lib/template/applyTemplate";
+import { deriveRefineByTypeFromTemplate } from "@/lib/style-library/mapping";
+import { readStyleLibraryFromStorage } from "@/lib/style-library/store";
+import { defaultStyleConfig, sampleMarkdown } from "@/lib/style/styleConfig";
 import { readTemplatesFromStorage } from "@/lib/template/templateStore";
-import type { StyleConfig } from "@/types/style";
-import type { RefineByTypePatch, RefineElementType, StyleTemplate } from "@/types/template";
+import type { ElementStylePreset } from "@/types/styleLibrary";
+import type { StyleTemplate } from "@/types/template";
 
 export default function ComposePage() {
   const [templates] = useState<StyleTemplate[]>(() => {
@@ -30,31 +29,38 @@ export default function ComposePage() {
   });
   const [markdown, setMarkdown] = useState(sampleMarkdown);
   const [mode, setMode] = useState<RenderMode>("standard");
-  const [globalStyle, setGlobalStyle] = useState<StyleConfig>(() => {
-    if (typeof window === "undefined") {
-      return defaultStyleConfig;
-    }
-    const loaded = readTemplatesFromStorage();
-    if (loaded.length === 0) {
-      return defaultStyleConfig;
-    }
-    return validateStyleConfig(loaded[0].globalStyleConfig);
-  });
-  const [undoSnapshot, setUndoSnapshot] = useState<StyleConfig | null>(null);
-  const [refineByType, setRefineByType] = useState<RefineByTypePatch>({});
-  const [activeRefineType, setActiveRefineType] = useState<RefineElementType>("h2");
   const [syncScroll, setSyncScroll] = useState(true);
   const [scrollRatio, setScrollRatio] = useState(0);
   const [status, setStatus] = useState("");
+  const [libraryPresets, setLibraryPresets] = useState<ElementStylePreset[]>(() => {
+    if (typeof window === "undefined") {
+      return [];
+    }
+    return readStyleLibraryFromStorage().presets;
+  });
+
+  useEffect(() => {
+    const refresh = () => setLibraryPresets(readStyleLibraryFromStorage().presets);
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, []);
 
   const selectedTemplate = useMemo(
     () => templates.find((item) => item.id === selectedTemplateId) ?? null,
     [selectedTemplateId, templates],
   );
+  const appliedGlobalStyle = selectedTemplate?.globalStyleConfig ?? defaultStyleConfig;
+  const appliedRefineByType = useMemo(
+    () =>
+      selectedTemplate
+        ? deriveRefineByTypeFromTemplate(selectedTemplate, libraryPresets)
+        : {},
+    [libraryPresets, selectedTemplate],
+  );
 
   const html = useMemo(
-    () => renderMarkdown(markdown, globalStyle, mode, { refineByType }),
-    [globalStyle, markdown, mode, refineByType],
+    () => renderMarkdown(markdown, appliedGlobalStyle, mode, { refineByType: appliedRefineByType }),
+    [appliedGlobalStyle, appliedRefineByType, markdown, mode],
   );
 
   async function exportHtml(): Promise<void> {
@@ -98,24 +104,12 @@ export default function ComposePage() {
     setStatus(copiedRich ? "Rich content copied for WeChat" : "Rich copy failed in this browser");
   }
 
-  function handleApplyTemplate(): void {
+  function handleResetTemplate(): void {
     if (!selectedTemplate) {
       setStatus("请先选择模板");
       return;
     }
-    const result = applyTemplate(globalStyle, selectedTemplate);
-    setGlobalStyle(result.nextStyleConfig);
-    setUndoSnapshot(result.undoSnapshot);
-    setStatus(`模板“${selectedTemplate.name}”已应用（可撤销）`);
-  }
-
-  function handleUndoApply(): void {
-    if (!undoSnapshot) {
-      return;
-    }
-    setGlobalStyle(undoSnapshot);
-    setUndoSnapshot(null);
-    setStatus("已撤销上一次模板应用");
+    setStatus(`已按模板“${selectedTemplate.name}”重置预览样式`);
   }
 
   const previewCardWidth = 375;
@@ -177,7 +171,16 @@ export default function ComposePage() {
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <select
               value={selectedTemplateId}
-              onChange={(event) => setSelectedTemplateId(event.target.value)}
+              onChange={(event) => {
+                const nextId = event.target.value;
+                setSelectedTemplateId(nextId);
+                const nextTemplate = templates.find((item) => item.id === nextId);
+                if (nextTemplate) {
+                  setStatus(`模板“${nextTemplate.name}”已应用`);
+                  return;
+                }
+                setStatus("已取消模板选择");
+              }}
               className="min-w-[220px] rounded-md border border-zinc-300 px-2 py-1.5 text-sm outline-none focus:border-zinc-500"
             >
               <option value="">选择模板...</option>
@@ -188,30 +191,23 @@ export default function ComposePage() {
               ))}
             </select>
             <button
-              onClick={handleApplyTemplate}
+              onClick={handleResetTemplate}
               className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800"
             >
-              应用模板（全量覆盖）
-            </button>
-            <button
-              onClick={handleUndoApply}
-              disabled={!undoSnapshot}
-              className="rounded-md border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-50"
-            >
-              撤销应用
+              重置为模板
             </button>
           </div>
           <p className="mt-2 h-5 text-xs text-emerald-600">{status}</p>
         </header>
 
-        <section className="grid min-h-[calc(100vh-185px)] grid-cols-1 gap-4 xl:grid-cols-[1.15fr_0.8fr_0.8fr_1fr]">
+        <section className="grid min-h-[calc(100vh-185px)] grid-cols-1 gap-4 xl:grid-cols-[1.25fr_1fr]">
           <MarkdownEditor
             value={markdown}
             onChange={setMarkdown}
             contentWidth={contentWidth}
-            fontSize={globalStyle.bodyFontSize}
-            lineHeight={globalStyle.lineHeight}
-            fontFamily={globalStyle.bodyFontFamily}
+            fontSize={appliedGlobalStyle.bodyFontSize}
+            lineHeight={appliedGlobalStyle.lineHeight}
+            fontFamily={appliedGlobalStyle.bodyFontFamily}
             syncEnabled={syncScroll}
             scrollRatio={scrollRatio}
             onScrollRatioChange={(ratio) => {
@@ -219,15 +215,6 @@ export default function ComposePage() {
                 setScrollRatio(ratio);
               }
             }}
-          />
-
-          <StylePanel title="全局样式" value={globalStyle} onChange={setGlobalStyle} />
-
-          <RefinePanel
-            refineByType={refineByType}
-            activeType={activeRefineType}
-            onActiveTypeChange={setActiveRefineType}
-            onChange={setRefineByType}
           />
 
           <PreviewPanel

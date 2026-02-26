@@ -11,6 +11,7 @@ export interface StyleTemplate {
   sourceType: TemplateSourceType;
   globalStyleConfig: StyleConfig;
   previewMarkdown: string;
+  elementPresetMapping?: Partial<Record<RefineElementType, string>>;
   createdAt: string;
   updatedAt: string;
   version: number;

@@ -3,17 +3,20 @@
 import { useState } from "react";
 
 import {
+  extractElementPresetsFromHtml,
   htmlToMarkdown,
   inferStyleConfigFromHtml,
   inspectHtmlFormat,
   normalizeImportedHtml,
+  type ExtractElementPresetResult,
   type FormatInspectionReport,
 } from "@/lib/analysis/formatInspector";
 import type { StyleConfig } from "@/types/style";
 
 interface FormatInspectorProps {
   baseStyleConfig: StyleConfig;
-  onImport: (payload: { markdown: string; inferredConfig: Partial<StyleConfig> }) => void;
+  onImport?: (payload: { markdown: string; inferredConfig: Partial<StyleConfig> }) => void;
+  onExtractElementPresets?: (result: ExtractElementPresetResult) => void;
   showAnalyzeButton?: boolean;
   confirmLabel?: string;
   pasteIconOnly?: boolean;
@@ -23,6 +26,7 @@ interface FormatInspectorProps {
 export function FormatInspector({
   baseStyleConfig,
   onImport,
+  onExtractElementPresets,
   showAnalyzeButton = true,
   confirmLabel = "Parse and Load to Workspace",
   pasteIconOnly = false,
@@ -78,13 +82,31 @@ export function FormatInspector({
     }
     try {
       const normalizedHtml = normalizeImportedHtml(inputHtml);
-      const markdown = htmlToMarkdown(normalizedHtml);
-      const inferredConfig = inferStyleConfigFromHtml(normalizedHtml, baseStyleConfig);
       const nextReport = inspectHtmlFormat(normalizedHtml);
       setReport(nextReport);
-      onImport({ markdown, inferredConfig });
-      setStatus("Imported to workspace with normalized structure and inferred style.");
-      onImportSuccess?.();
+      let isSuccess = false;
+      if (onExtractElementPresets) {
+        const extraction = extractElementPresetsFromHtml(normalizedHtml, baseStyleConfig);
+        onExtractElementPresets(extraction);
+        isSuccess = extraction.presets.length > 0;
+        setStatus(
+          isSuccess
+            ? `已提取 ${extraction.presets.length} 个元素样式预设。`
+            : "未提取到可用元素样式，请检查 HTML。",
+        );
+      } else if (onImport) {
+        const markdown = htmlToMarkdown(normalizedHtml);
+        const inferredConfig = inferStyleConfigFromHtml(normalizedHtml, baseStyleConfig);
+        onImport({ markdown, inferredConfig });
+        isSuccess = true;
+        setStatus("Imported to workspace with normalized structure and inferred style.");
+      } else {
+        setStatus("No import handler configured.");
+        return;
+      }
+      if (isSuccess) {
+        onImportSuccess?.();
+      }
     } catch {
       setStatus("Import failed. Check HTML input.");
     }
